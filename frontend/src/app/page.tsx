@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAppState } from "@/components/providers";
 import { ContextMode, contextConfig, BACKEND_URL } from "@/lib/utils";
 import { useVoice } from "@/hooks/useVoice";
+import { DonutLogo } from "@/components/DonutLogo";
 import {
   Mic,
   MicOff,
@@ -19,7 +20,6 @@ import {
   BookOpen,
   CheckSquare,
   Brain,
-  Settings,
   BarChart3,
 } from "lucide-react";
 
@@ -205,12 +205,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className={`min-h-screen ${config.gradient} transition-all duration-300`}>
+    <div className="min-h-screen billionaire-interface-gradient transition-all duration-700">
       <div className="flex h-screen">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -219,35 +219,34 @@ export default function HomePage() {
         <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-50
-            w-72 ${config.gradient} backdrop-blur-xl
-            border-r border-sophisticated-charcoal/30
-            transform transition-transform duration-300 ease-in-out
+            w-72 billionaire-sidebar
+            transform transition-transform duration-500 ease-out
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           `}
         >
-          <div className="p-4 space-y-4">
+          <div className="p-5 space-y-5">
             {/* Logo */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🍩</span>
+              <div className="flex items-center gap-3">
+                <DonutLogo size={40} animated />
                 <div>
-                  <h1 className="font-bold text-lg text-sophisticated-ivory">
+                  <h1 className="font-bold text-lg text-billionaire-gold-400 gold-text">
                     Donut
                   </h1>
-                  <p className="text-xs text-sophisticated-taupe">Executive Co-Pilot</p>
+                  <p className="text-xs text-billionaire-platinum/60">Executive Co-Pilot</p>
                 </div>
               </div>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-2 rounded-full hover:bg-sophisticated-charcoal/30"
+                className="lg:hidden p-2 rounded-full hover:bg-billionaire-gold-500/10 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-billionaire-platinum/70" />
               </button>
             </div>
 
             {/* Context Selector */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-sophisticated-taupe uppercase">Context</p>
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-billionaire-platinum/50 uppercase tracking-wider">Context</p>
               {(Object.keys(contextConfig) as ContextMode[]).map((mode) => {
                 const c = contextConfig[mode];
                 const isActive = mode === contextMode;
@@ -258,35 +257,35 @@ export default function HomePage() {
                     key={mode}
                     onClick={() => setContextMode(mode)}
                     className={`
-                      w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
+                      w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-300
                       ${
                         isActive
-                          ? `bg-sophisticated-burgundy/20 ${c.color} font-medium`
-                          : "text-sophisticated-taupe hover:bg-sophisticated-charcoal/20"
+                          ? `bg-billionaire-gold-500/15 text-billionaire-gold-400 font-medium gold-border-glow`
+                          : "text-billionaire-platinum/70 hover:bg-billionaire-gold-500/5 hover:text-billionaire-gold-400/80"
                       }
                     `}
                   >
                     <span>{c.icon}</span>
                     <span>{c.label}</span>
-                    {isActive && <CircleDot className="w-4 h-4 ml-auto" />}
+                    {isActive && <CircleDot className="w-4 h-4 ml-auto text-billionaire-gold-500" />}
                   </button>
                 );
               })}
             </div>
 
             {/* Navigation */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-sophisticated-taupe uppercase">Navigation</p>
+            <div className="space-y-2 pt-3">
+              <p className="text-xs font-medium text-billionaire-platinum/50 uppercase tracking-wider">Navigation</p>
               <a
                 href="/"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm bg-sophisticated-burgundy/20 font-medium text-sophisticated-ivory"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm bg-billionaire-gold-500/10 font-medium text-billionaire-gold-400 gold-border-glow"
               >
                 <MessageSquare className="w-4 h-4" />
                 Chat
               </a>
               <a
                 href="/console"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sophisticated-taupe hover:bg-sophisticated-charcoal/20"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-billionaire-platinum/70 hover:bg-billionaire-gold-500/5 hover:text-billionaire-gold-400/80 transition-all duration-300"
               >
                 <BarChart3 className="w-4 h-4" />
                 Console
@@ -298,48 +297,56 @@ export default function HomePage() {
         {/* Main Chat Area */}
         <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-sophisticated-charcoal/30 bg-sophisticated-midnight/50 backdrop-blur-lg">
-            <div className="flex items-center gap-3">
+          <header className="flex items-center justify-between px-6 py-4 border-b border-billionaire-gold-500/10 bg-billionaire-charcoal/50 backdrop-blur-xl">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-full hover:bg-sophisticated-charcoal/30"
+                className="lg:hidden p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-colors"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5 text-billionaire-platinum/80" />
               </button>
-              <div className="flex items-center gap-2">
-                <span className={`w-3 h-3 rounded-full ${config.color.replace("text-", "bg-")}`} />
-                <span className={`text-sm font-medium ${config.color}`}>
+              <div className="flex items-center gap-3">
+                <span className={`w-3 h-3 rounded-full ${
+                  contextMode === 'business' ? 'bg-billionaire-gold-500' :
+                  contextMode === 'personal' ? 'bg-billionaire-emerald' : 'bg-billionaire-platinum'
+                } animate-pulse-slow`} />
+                <span className={`text-sm font-medium ${
+                  contextMode === 'business' ? 'text-billionaire-gold-500' :
+                  contextMode === 'personal' ? 'text-billionaire-emerald' : 'text-billionaire-platinum'
+                }`}>
                   {config.label} Mode
                 </span>
               </div>
             </div>
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-sophisticated-charcoal/30"
+              className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
             >
               {isDarkMode ? (
-                <Sun className="w-5 h-5" />
+                <Sun className="w-5 h-5 text-billionaire-gold-400" />
               ) : (
-                <Moon className="w-5 h-5" />
+                <Moon className="w-5 h-5 text-billionaire-platinum/70" />
               )}
             </button>
           </header>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
             {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <span className="text-6xl">🍩</span>
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-fade-in">
+                <div className="float-slow">
+                  <DonutLogo size={120} />
+                </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-sophisticated-ivory">
+                  <h2 className="text-3xl font-bold text-billionaire-gold-400 gold-text">
                     Hello, I'm Donut
                   </h2>
-                  <p className="text-sophisticated-taupe mt-1 max-w-sm">
+                  <p className="text-billionaire-platinum/60 mt-2 max-w-md mx-auto">
                     Your executive function co-pilot. Ask me to manage tasks, write diary entries,
                     search the web, or remember things for you.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-center mt-4">
+                <div className="flex flex-wrap gap-3 justify-center mt-6">
                   {[
                     "Add a task to review Q3 report",
                     "Write in my diary about today",
@@ -349,9 +356,7 @@ export default function HomePage() {
                     <button
                       key={suggestion}
                       onClick={() => handleSend(suggestion)}
-                      className="px-4 py-2 text-sm rounded-full bg-sophisticated-charcoal/20 
-                        border border-sophisticated-charcoal/30 hover:border-sophisticated-burgundy 
-                        transition-colors"
+                      className="px-5 py-2.5 text-sm rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
                     >
                       {suggestion}
                     </button>
@@ -363,16 +368,13 @@ export default function HomePage() {
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-slide-up`}
+                style={{ animationDelay: `${i * 0.05}s` }}
               >
                 <div
                   className={`
-                    max-w-[80%] rounded-2xl px-4 py-3
-                    ${
-                      msg.role === "user"
-                        ? "bg-sophisticated-burgundy text-sophisticated-ivory rounded-br-sm"
-                        : "bg-sophisticated-slate text-sophisticated-platinum rounded-bl-sm"
-                    }
+                    max-w-[80%] 
+                    ${msg.role === "user" ? "message-user" : "message-assistant"}
                   `}
                 >
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">
@@ -383,15 +385,15 @@ export default function HomePage() {
             ))}
 
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-sophisticated-slate rounded-2xl rounded-bl-sm px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-sophisticated-charcoal rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-2 h-2 bg-sophisticated-charcoal rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-2 h-2 bg-sophisticated-charcoal rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="flex justify-start animate-scale-in">
+                <div className="glass-card rounded-2xl rounded-bl-sm px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 bg-billionaire-gold-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-2.5 h-2.5 bg-billionaire-gold-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="w-2.5 h-2.5 bg-billionaire-gold-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
-                    <span className="text-xs text-sophisticated-taupe">Thinking...</span>
+                    <span className="text-xs text-billionaire-platinum/60">Thinking...</span>
                   </div>
                 </div>
               </div>
@@ -401,28 +403,22 @@ export default function HomePage() {
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-sophisticated-charcoal/30 p-4 space-y-3 bg-sophisticated-midnight/50 backdrop-blur-lg">
+          <div className="border-t border-billionaire-gold-500/10 p-6 space-y-4 bg-billionaire-charcoal/50 backdrop-blur-xl">
             {/* Voice Button + Text Input */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
               <button
                 onClick={isListening ? stopListening : startListening}
                 disabled={!isSupported}
                 className={`
-                  flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center
-                  transition-all duration-200
-                  ${
-                    isListening
-                      ? "bg-red-500 text-white animate-pulse ring-4 ring-red-200"
-                      : "bg-sophisticated-burgundy hover:bg-sophisticated-emerald hover:text-white"
-                  }
+                  ${isListening ? 'voice-button-listening' : 'voice-button-idle'}
                   ${!isSupported ? "opacity-50 cursor-not-allowed" : ""}
                 `}
                 title={isListening ? "Tap to stop" : "Tap to speak"}
               >
-                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
               </button>
 
-              <div className="flex-1 flex gap-2">
+              <div className="flex-1 flex gap-3">
                 <input
                   ref={inputRef}
                   type="text"
@@ -430,14 +426,14 @@ export default function HomePage() {
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-3 rounded-full bg-sophisticated-charcoal/20 text-sophisticated-ivory placeholder-sophisticated-charcoal/50 border border-sophisticated-charcoal/30 focus:outline-none focus:ring-2 focus:ring-sophisticated-gold"
+                  className="glass-input flex-1"
                   autoFocus={true}
                   autoComplete="off"
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={(!inputText.trim() || isLoading) || false}
-                  className="w-12 h-12 rounded-full bg-sophisticated-burgundy hover:bg-sophisticated-emerald hover:text-white flex items-center justify-center transition-colors disabled:opacity-50"
+                  className="gold-button w-14 h-14 p-0 flex items-center justify-center disabled:opacity-50"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -445,13 +441,13 @@ export default function HomePage() {
             </div>
 
             {isListening && (
-              <p className="text-center text-xs text-emerald-400 animate-pulse">
+              <p className="text-center text-xs text-billionaire-gold-400 animate-pulse max-w-4xl mx-auto">
                 🎤 Listening... speak now
               </p>
             )}
             
             {voiceError && (
-              <p className="text-center text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">
+              <p className="text-center text-xs text-billionaire-platinum/80 bg-billionaire-burgundy/10 px-4 py-2 rounded-xl max-w-4xl mx-auto border border-billionaire-burgundy/30">
                 ⚠️ {voiceError}
               </p>
             )}
