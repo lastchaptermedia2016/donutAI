@@ -40,7 +40,7 @@ export default function HomePage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const config = contextConfig[contextMode];
-  const { isListening, startListening, stopListening, isSupported } = useVoice({
+  const { isListening, startListening, stopListening, isSupported, error: voiceError } = useVoice({
     onResult: (text) => {
       setInputText(text);
       handleSend(text);
@@ -445,8 +445,14 @@ export default function HomePage() {
             </div>
 
             {isListening && (
-              <p className="text-center text-xs text-red-500 animate-pulse">
-                Listening... speak now
+              <p className="text-center text-xs text-emerald-400 animate-pulse">
+                🎤 Listening... speak now
+              </p>
+            )}
+            
+            {voiceError && (
+              <p className="text-center text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">
+                ⚠️ {voiceError}
               </p>
             )}
           </div>

@@ -1,102 +1,84 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        // Billionaire Warm Gold Palette
+        billionaire: {
+          black: "#0A0A0A",
+          charcoal: "#121212",
+          slate: "#1A1A1A",
+          titanium: "#2D2D2D",
+          platinum: "#D1D1D1",
+          silver: "#E5E4E2",
+          gold: {
+            50: "#FDF6E3",
+            100: "#F7E9C1",
+            200: "#EFD89C",
+            300: "#E5C777",
+            400: "#DAB65B",
+            500: "#C9A96E", // Primary gold
+            600: "#B89857",
+            700: "#A68743",
+            800: "#947632",
+            900: "#826524",
+          },
+          burgundy: "#722F37",
+          amber: "#C89B3C",
+          bronze: "#A67C52",
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        // Donut brand colors
-donut: {
-  // Main sophisticated colors
-  midnight: "#1a1f2e",
-  slate: "#2d3748",
-  platinum: "#e2e8f0",
-  champagne: "#f7fafc",
-  
-  // Accent colors for sophistication
-  burgundy: "#6b2737",
-  emerald: "#2d5a2d",
-  gold: "#d4af37",
-  silver: "#c0c0c0",
-  
-  // Neutral sophisticated tones
-  taupe: "#b8c2cc",
-  charcoal: "#4a5568",
-  ivory: "#fffff0",
-},
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Playfair Display", "serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        pulse: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
+      boxShadow: {
+        "billionaire-sm": "0 1px 2px rgba(201, 169, 110, 0.05)",
+        "billionaire": "0 4px 12px rgba(201, 169, 110, 0.1)",
+        "billionaire-lg": "0 8px 24px rgba(201, 169, 110, 0.15)",
+        "billionaire-xl": "0 16px 48px rgba(201, 169, 110, 0.2)",
+        "gold-glow": "0 0 20px rgba(201, 169, 110, 0.3)",
+      },
+      backdropBlur: {
+        xs: "2px",
+        "4xl": "40px",
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fadeIn 0.5s ease-in-out",
+        "slide-up": "slideUp 0.4s ease-out",
+        "scale-in": "scaleIn 0.3s ease-out",
+        "float": "float 6s ease-in-out infinite",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(20px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        scaleIn: {
+          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 };
 
 export default config;

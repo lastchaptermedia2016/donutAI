@@ -15,6 +15,7 @@ interface UseVoiceReturn {
   stopListening: () => void;
   isSupported: boolean;
   error: string | null;
+  permissionStatus: 'granted' | 'denied' | 'prompt' | 'unknown';
 }
 
 export function useVoice({
@@ -25,6 +26,7 @@ export function useVoice({
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const recognitionRef = useRef<any>(null);
 
   const isSupported =
@@ -37,18 +39,34 @@ export function useVoice({
   // Check for browser compatibility and provide user feedback via state
   useEffect(() => {
     if (!isSupported && typeof window !== "undefined") {
-      const errorMessage = "Voice functionality is not supported in this browser. Please use Chrome, Firefox, or Edge.";
+      const errorMessage = "Voice functionality is not supported in this browser. Please use Chrome, Edge, or Safari.";
       console.error(errorMessage);
       setError(errorMessage);
       
-      // Clear error after 5 seconds
+      // Clear error after 8 seconds
       const timer = setTimeout(() => {
         setError(null);
-      }, 5000);
+      }, 8000);
       
       return () => clearTimeout(timer);
     }
   }, [isSupported]);
+
+  // Check microphone permissions
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.mediaDevices) {
+      navigator.permissions?.query({ name: 'microphone' as PermissionName })
+        .then((status) => {
+          setPermissionStatus(status.state as 'granted' | 'denied' | 'prompt');
+          status.addEventListener('change', () => {
+            setPermissionStatus(status.state as 'granted' | 'denied' | 'prompt');
+          });
+        })
+        .catch(() => {
+          setPermissionStatus('unknown');
+        });
+    }
+  }, []);
 
   useEffect(() => {
     if (!isSupported) return;
@@ -60,52 +78,122 @@ export function useVoice({
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = lang;
+    recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => setIsListening(true);
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError(null);
+    };
+
     recognition.onresult = (event: any) => {
-      let currentTranscript = "";
+      let fullTranscript = transcript;
+      
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        currentTranscript += event.results[i][0].transcript;
+        const transcriptPart = event.results[i][0].transcript;
+        fullTranscript = event.results[i].isFinal 
+          ? transcriptPart.trim() 
+          : transcriptPart;
       }
-      setTranscript(currentTranscript);
+      
+      setTranscript(fullTranscript);
 
-      if (event.results[0].isFinal) {
-        onResult?.(currentTranscript);
+      if (event.results[event.resultIndex]?.isFinal) {
+        onResult?.(fullTranscript.trim());
       }
     };
+
     recognition.onerror = (event: any) => {
-      const error = new Error(
-        `Speech recognition error: ${event.error || event.message}`
-      );
-      onError?.(error);
+      console.error("Speech recognition error:", event.error);
+      
+      let userMessage = "Voice recognition error";
+      
+      switch(event.error) {
+        case 'not-allowed':
+          userMessage = "Microphone permission denied. Please allow microphone access in your browser settings.";
+          setPermissionStatus('denied');
+          break;
+        case 'no-speech':
+          userMessage = "No speech detected. Try speaking louder.";
+          break;
+        case 'audio-capture':
+          userMessage = "No microphone detected. Please check your audio device.";
+          break;
+        case 'network':
+          userMessage = "Network error. Check your internet connection.";
+          break;
+      }
+      
+      setError(userMessage);
+      onError?.(new Error(userMessage));
+      setIsListening(false);
+
+      // Auto-clear non-critical errors after 4 seconds
+      if (event.error !== 'not-allowed') {
+        setTimeout(() => setError(null), 4000);
+      }
+    };
+
+    recognition.onend = () => {
       setIsListening(false);
     };
-    recognition.onend = () => setIsListening(false);
 
     recognitionRef.current = recognition;
 
     return () => {
       recognition.onend = null;
-      recognition.abort?.();
+      recognition.onerror = null;
+      try {
+        recognition.abort();
+      } catch (e) {
+        // Ignore abort errors
+      }
     };
-  }, [onResult, onError, lang, isSupported]);
+  }, [onResult, onError, lang, isSupported, transcript]);
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current) return;
-    setTranscript("");
-    try {
-      recognitionRef.current.start();
-    } catch (e) {
-      // Already running
+    if (!recognitionRef.current) {
+      setError("Voice recognition not available");
+      return;
     }
-  }, []);
+
+    if (permissionStatus === 'denied') {
+      setError("Microphone permission blocked. Please enable it in your browser settings.");
+      return;
+    }
+
+    setTranscript("");
+    setError(null);
+    
+    try {
+      if (isListening) {
+        recognitionRef.current.stop();
+        setTimeout(() => recognitionRef.current.start(), 100);
+      } else {
+        recognitionRef.current.start();
+      }
+    } catch (e: any) {
+      if (e.name === 'InvalidStateError') {
+        // Already running, restart after short delay
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+          } catch {}
+        }, 200);
+      } else {
+        console.error("Failed to start recognition:", e);
+        setError("Failed to activate microphone. Please try again.");
+      }
+    }
+  }, [isListening, permissionStatus]);
 
   const stopListening = useCallback(() => {
     if (!recognitionRef.current) return;
+    
     try {
       recognitionRef.current.stop();
+      setIsListening(false);
     } catch (e) {
-      // Already stopped
+      // Already stopped, ignore
     }
   }, []);
 
@@ -116,5 +204,6 @@ export function useVoice({
     stopListening,
     isSupported,
     error,
+    permissionStatus,
   };
 }

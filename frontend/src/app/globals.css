@@ -80,90 +80,100 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: rgba(201, 169, 110, 0.1);
   }
   body {
-    @apply bg-background text-foreground;
+    @apply billionaire-bg text-billionaire-platinum min-h-screen;
   }
 }
 
 @layer components {
-  .donut-gradient {
-    @apply bg-gradient-to-br from-donut-amber via-donut-cream to-donut-rose;
+  /* ==========================================
+  /* BILLIONAIRE LUXURY DESIGN SYSTEM
+  /* ========================================== */
+
+  /* Background gradients */
+  .billionaire-bg {
+    @apply bg-gradient-to-br from-billionaire-black via-billionaire-charcoal to-billionaire-slate;
   }
   
-  .business-gradient {
-    @apply bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10;
+  .billionaire-interface-gradient {
+    @apply bg-gradient-to-br from-billionaire-charcoal/80 via-billionaire-slate/60 to-billionaire-titanium/40;
   }
   
-  .personal-gradient {
-    @apply bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/10;
+  /* Glass morphism components */
+  .glass-card {
+    @apply bg-billionaire-slate/30 backdrop-blur-2xl border border-billionaire-gold-500/10 shadow-billionaire-xl;
   }
   
-  .neutral-gradient {
-    @apply bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-900/20 dark:to-stone-800/10;
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:border-billionaire-gold-500/30 hover:shadow-gold-glow;
   }
   
+  .glass-input {
+    @apply bg-billionaire-slate/40 backdrop-blur-xl border border-billionaire-gold-500/15 text-billionaire-platinum placeholder-billionaire-platinum/40 rounded-full px-5 py-3.5 transition-all duration-300 focus:outline-none focus:border-billionaire-gold-500 focus:shadow-gold-glow;
+  }
+  
+  /* Gold gradient buttons */
+  .gold-button {
+    @apply bg-gradient-to-br from-billionaire-gold-400 via-billionaire-gold-500 to-billionaire-gold-600 text-billionaire-black font-medium rounded-full px-6 py-3 transition-all duration-300 hover:shadow-gold-glow hover:scale-105 active:scale-95;
+  }
+  
+  .gold-button-ghost {
+    @apply border border-billionaire-gold-500/30 text-billionaire-gold-500 font-medium rounded-full px-6 py-3 transition-all duration-300 hover:bg-billionaire-gold-500/10 hover:border-billionaire-gold-500/60;
+  }
+  
+  /* Voice button styles */
   .voice-button {
-    @apply flex items-center justify-center w-16 h-16 rounded-full transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl active:scale-95;
-  }
-  
-  .voice-button-listening {
-    @apply voice-button bg-red-500 text-white animate-pulse ring-4 ring-red-300 dark:ring-red-700;
+    @apply flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 ease-out shadow-billionaire hover:shadow-billionaire-lg active:scale-95;
   }
   
   .voice-button-idle {
-    @apply voice-button bg-donut-amber hover:bg-donut-brown hover:text-white;
+    @apply voice-button bg-gradient-to-br from-billionaire-gold-400 via-billionaire-gold-500 to-billionaire-gold-600 text-billionaire-black hover:shadow-gold-glow;
   }
   
-  /* Sophisticated theme components */
-  .sophisticated-gradient {
-    @apply bg-gradient-to-br from-sophisticated-midnight/20 via-sophisticated-slate/10 to-sophisticated-charcoal/5;
+  .voice-button-listening {
+    @apply voice-button bg-billionaire-burgundy text-white animate-pulse ring-4 ring-billionaire-burgundy/30;
   }
   
-  .accent-gradient {
-    @apply bg-gradient-to-r from-sophisticated-burgundy to-sophisticated-emerald;
+  /* Message bubbles */
+  .message-user {
+    @apply bg-gradient-to-br from-billionaire-gold-500/90 to-billionaire-gold-600/90 text-billionaire-black rounded-2xl rounded-br-sm px-4 py-3 shadow-billionaire-sm;
   }
   
-  .sophisticated-card {
-    @apply bg-sophisticated-midnight/50 backdrop-blur-sm border border-sophisticated-charcoal/30 rounded-2xl shadow-2xl shadow-sophisticated-midnight/25;
+  .message-assistant {
+    @apply glass-card text-billionaire-platinum rounded-2xl rounded-bl-sm px-4 py-3;
   }
   
-  .sophisticated-button {
-    @apply bg-sophisticated-burgundy text-sophisticated-ivory px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105;
+  /* Sidebar styles */
+  .billionaire-sidebar {
+    @apply bg-billionaire-charcoal/90 backdrop-blur-2xl border-r border-billionaire-gold-500/10;
   }
   
-  .sophisticated-input {
-    @apply bg-sophisticated-charcoal/20 text-sophisticated-ivory placeholder-sophisticated-charcoal/50 border border-sophisticated-charcoal/30 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sophisticated-gold;
+  /* Animations */
+  .float-slow {
+    animation: float 8s ease-in-out infinite;
   }
   
-  .sophisticated-touch-button {
-    @apply w-16 h-16 rounded-full;
-    @screen sm {
-      @apply w-20 h-20;
-    }
-    @screen md {
-      @apply w-16 h-16;
-    }
+  .glow-pulse {
+    animation: glowPulse 3s ease-in-out infinite;
   }
   
-  .sophisticated-mobile-text {
-    font-size: 1rem;
-    @screen sm {
-      font-size: 1.125rem;
-    }
-    @screen md {
-      font-size: 1rem;
-    }
+  /* Shadows */
+  .gold-text {
+    text-shadow: 0 0 10px rgba(201, 169, 110, 0.3);
   }
   
-  .sophisticated-mobile-card {
-    @apply rounded-2xl p-6;
-    @screen sm {
-      @apply p-8;
-    }
-    @screen md {
-      @apply p-6;
-    }
+  .gold-border-glow {
+    box-shadow: 0 0 15px rgba(201, 169, 110, 0.2), inset 0 0 15px rgba(201, 169, 110, 0.05);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 169, 110, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(201, 169, 110, 0.4);
   }
 }
