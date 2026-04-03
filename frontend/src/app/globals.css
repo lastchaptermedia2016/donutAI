@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+:root {
+  --background: 45 100% 97%;
+  --foreground: 25 20% 15%;
+  --card: 45 80% 99%;
+  --card-foreground: 25 20% 15%;
+  --popover: 45 80% 99%;
+  --popover-foreground: 25 20% 15%;
+  --primary: 45 100% 50%;
+  --primary-foreground: 25 40% 15%;
+  --secondary: 25 50% 35%;
+  --secondary-foreground: 45 80% 95%;
+  --muted: 45 20% 90%;
+  --muted-foreground: 25 10% 45%;
+  --accent: 355 40% 85%;
+  --accent-foreground: 25 20% 15%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 45 100% 97%;
+  --border: 25 15% 85%;
+  --input: 25 15% 85%;
+  --ring: 45 100% 50%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 25 20% 8%;
+  --foreground: 45 30% 95%;
+  --card: 25 15% 10%;
+  --card-foreground: 45 30% 95%;
+  --popover: 25 15% 10%;
+  --popover-foreground: 45 30% 95%;
+  --primary: 45 100% 55%;
+  --primary-foreground: 25 40% 10%;
+  --secondary: 25 40% 40%;
+  --secondary-foreground: 45 80% 95%;
+  --muted: 25 15% 18%;
+  --muted-foreground: 45 10% 60%;
+  --accent: 355 30% 30%;
+  --accent-foreground: 45 30% 95%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 45 30% 95%;
+  --border: 25 15% 22%;
+  --input: 25 15% 22%;
+  --ring: 45 100% 55%;
+}
+
+/* Sophisticated theme variables */
+:root {
+  --sophisticated-midnight: 220 24% 15%;
+  --sophisticated-slate: 220 16% 20%;
+  --sophisticated-platinum: 220 16% 95%;
+  --sophisticated-champagne: 220 20% 98%;
+  --sophisticated-burgundy: 0 30% 30%;
+  --sophisticated-emerald: 120 25% 25%;
+  --sophisticated-gold: 50 80% 60%;
+  --sophisticated-silver: 0 0% 80%;
+  --sophisticated-taupe: 220 12% 85%;
+  --sophisticated-charcoal: 220 12% 30%;
+  --sophisticated-ivory: 50 20% 95%;
+}
+
+.dark {
+  --sophisticated-midnight: 220 24% 10%;
+  --sophisticated-slate: 220 16% 15%;
+  --sophisticated-platinum: 220 16% 90%;
+  --sophisticated-champagne: 220 20% 95%;
+  --sophisticated-burgundy: 0 30% 25%;
+  --sophisticated-emerald: 120 25% 20%;
+  --sophisticated-gold: 50 80% 55%;
+  --sophisticated-silver: 0 0% 75%;
+  --sophisticated-taupe: 220 12% 80%;
+  --sophisticated-charcoal: 220 12% 25%;
+  --sophisticated-ivory: 50 20% 90%;
+}
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .donut-gradient {
+    @apply bg-gradient-to-br from-donut-amber via-donut-cream to-donut-rose;
+  }
+  
+  .business-gradient {
+    @apply bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10;
+  }
+  
+  .personal-gradient {
+    @apply bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/10;
+  }
+  
+  .neutral-gradient {
+    @apply bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-900/20 dark:to-stone-800/10;
+  }
+  
+  .voice-button {
+    @apply flex items-center justify-center w-16 h-16 rounded-full transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl active:scale-95;
+  }
+  
+  .voice-button-listening {
+    @apply voice-button bg-red-500 text-white animate-pulse ring-4 ring-red-300 dark:ring-red-700;
+  }
+  
+  .voice-button-idle {
+    @apply voice-button bg-donut-amber hover:bg-donut-brown hover:text-white;
+  }
+  
+  /* Sophisticated theme components */
+  .sophisticated-gradient {
+    @apply bg-gradient-to-br from-sophisticated-midnight/20 via-sophisticated-slate/10 to-sophisticated-charcoal/5;
+  }
+  
+  .accent-gradient {
+    @apply bg-gradient-to-r from-sophisticated-burgundy to-sophisticated-emerald;
+  }
+  
+  .sophisticated-card {
+    @apply bg-sophisticated-midnight/50 backdrop-blur-sm border border-sophisticated-charcoal/30 rounded-2xl shadow-2xl shadow-sophisticated-midnight/25;
+  }
+  
+  .sophisticated-button {
+    @apply bg-sophisticated-burgundy text-sophisticated-ivory px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105;
+  }
+  
+  .sophisticated-input {
+    @apply bg-sophisticated-charcoal/20 text-sophisticated-ivory placeholder-sophisticated-charcoal/50 border border-sophisticated-charcoal/30 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sophisticated-gold;
+  }
+  
+  .sophisticated-touch-button {
+    @apply w-16 h-16 rounded-full;
+    @screen sm {
+      @apply w-20 h-20;
+    }
+    @screen md {
+      @apply w-16 h-16;
+    }
+  }
+  
+  .sophisticated-mobile-text {
+    font-size: 1rem;
+    @screen sm {
+      font-size: 1.125rem;
+    }
+    @screen md {
+      font-size: 1rem;
+    }
+  }
+  
+  .sophisticated-mobile-card {
+    @apply rounded-2xl p-6;
+    @screen sm {
+      @apply p-8;
+    }
+    @screen md {
+      @apply p-6;
+    }
+  }
+}

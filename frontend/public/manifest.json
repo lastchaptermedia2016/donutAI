@@ -1,0 +1,37 @@
+{
+  "name": "Donut - Executive Function Co-Pilot",
+  "short_name": "Donut",
+  "description": "A multi-modal agentic voice assistant for executive function",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF8DC",
+  "theme_color": "#FFBF00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Voice Command",
+      "url": "/",
+      "description": "Launch Donut voice assistant"
+    },
+    {
+      "name": "Console",
+      "url": "/console",
+      "description": "Open management console"
+    }
+  ]
+}

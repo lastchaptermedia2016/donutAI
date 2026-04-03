@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "donut-backend"
+version = "0.1.0"
+description = "Donut AI - Executive Function Co-Pilot Backend"
+requires-python = ">=3.11"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "groq>=0.4.0",
+    "langgraph>=0.0.20",
+    "langchain>=0.1.0",
+    "langchain-openai>=0.0.5",
+    "lancedb>=0.5.0",
+    "pylance>=0.9.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    "aiosqlite>=0.19.0",
+    "websockets>=12.0",
+    "python-multipart>=0.0.6",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "coqui-tts>=0.22.0",
+    "numpy>=1.26.0",
+    "sentence-transformers>=2.3.0",
+    "duckduckgo-search>=4.0",
+    "apscheduler>=3.10.0",
+    "httpx>=0.26.0",
+    "tenacity>=8.2.0",
+    "openai>=1.0.0",
+    "google-api-python-client>=2.100.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
