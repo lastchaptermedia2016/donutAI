@@ -180,15 +180,23 @@ class TTSService:
     async def _groq_speak(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Optional[bytes]:
-        """Synthesize using Groq API.
-        
-        Note: Groq primarily provides LLM inference. For TTS, we use
-        a text-based approach that falls back to browser TTS.
-        """
-        # Groq doesn't have native TTS, so we return None to use browser fallback
-        # In the future, Groq may add TTS capabilities
-        logger.info("Groq TTS: Using browser SpeechSynthesis fallback")
-        return None
+        """Synthesize using Groq API."""
+        if isinstance(self._engine, type(None)):
+            return None
+
+        try:
+            response = await self._engine.audio.speech.create(
+                model="canopylabs/orpheus-v1-english",
+                input=text[:4096],
+                voice=voice or "autumn",
+                response_format="wav",
+                speed=speed,
+            )
+            return response.read()
+        except Exception as e:
+            logger.error(f"Groq TTS error: {e}")
+            # Fallback to browser if Groq TTS fails
+            return None
 
     async def _elevenlabs_speak(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0

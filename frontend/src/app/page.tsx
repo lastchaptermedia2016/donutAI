@@ -85,9 +85,10 @@ export default function HomePage() {
               setIsLoading(false);
 
               // Speak response
-              if ("speechSynthesis" in window) {
-                const utterance = new SpeechSynthesisUtterance(data.content);
-                speechSynthesis.speak(utterance);
+              // Speak response from server audio stream
+              if (data.audio) {
+                const audio = new Audio(`data:audio/wav;base64,${data.audio}`);
+                audio.play().catch(e => console.log("Audio play failed:", e));
               }
             } else if (data.type === "status") {
               // Show status in UI
@@ -174,10 +175,10 @@ export default function HomePage() {
             },
           ]);
 
-          // Speak response using browser TTS
-          if ("speechSynthesis" in window && data.response) {
-            const utterance = new SpeechSynthesisUtterance(data.response);
-            speechSynthesis.speak(utterance);
+          // Speak response from server audio stream
+          if (data.audio) {
+            const audio = new Audio(`data:audio/wav;base64,${data.audio}`);
+            audio.play().catch(e => console.log("Audio play failed:", e));
           }
         } catch (error) {
           console.error("Error sending message:", error);
@@ -432,7 +433,7 @@ export default function HomePage() {
                 />
                 <button
                   onClick={() => handleSend()}
-                  disabled={(!inputText.trim() || isLoading) || false}
+                  disabled={!inputText.trim() || isLoading}
                   className="gold-button w-14 h-14 p-0 flex items-center justify-center disabled:opacity-50"
                 >
                   <Send className="w-5 h-5" />
