@@ -350,6 +350,10 @@ Customize Donut's personality and behavior through the Console Settings:
 - **[WHITE_LABEL_GUIDE.md](WHITE_LABEL_GUIDE.md)** - Complete white-label customization guide
 - **[BUILD_AND_TEST_REPORT.md](BUILD_AND_TEST_REPORT.md)** - Production readiness report
 - **[LUXURY_UI_ENHANCEMENTS.md](LUXURY_UI_ENHANCEMENTS.md)** - Documentation for premium UI/UX features including holographic effects, magnetic buttons, gradient mesh backgrounds, particle effects, and more
+- **[CI_CD_SETUP.md](CI_CD_SETUP.md)** - GitHub Actions and Vercel preview deployments setup guide
+- **[TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md)** - Comprehensive troubleshooting guide for common issues
+- **[STABILITY_REVIEW_REPORT.md](STABILITY_REVIEW_REPORT.md)** - Code stability analysis and production readiness assessment
+- **[MOBILE_COMPATIBILITY_GUIDE.md](MOBILE_COMPATIBILITY_GUIDE.md)** - Mobile device compatibility guide and browser support matrix
 
 ## Troubleshooting
 

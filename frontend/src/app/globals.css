@@ -421,3 +421,40 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(201, 169, 110, 0.5) 0%, rgba(30, 58, 95, 0.5) 100%);
 }
+
+/* Mobile dropdown fix - ensure option text is visible */
+select option {
+  background-color: #272D3D !important;
+  color: #EDEDF5 !important;
+}
+
+/* Fix for iOS Safari dropdown styling */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  select {
+    -webkit-appearance: menulist;
+    appearance: menulist;
+  }
+  
+  select option {
+    background-color: #272D3D;
+    color: #EDEDF5;
+    -webkit-appearance: none;
+  }
+}
+
+/* Ensure touch-friendly sizing on mobile */
+@media (max-width: 768px) {
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  input[type="range"] {
+    min-height: 44px;
+  }
+  
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
