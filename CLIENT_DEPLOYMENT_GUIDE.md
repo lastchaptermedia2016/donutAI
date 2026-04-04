@@ -54,11 +54,76 @@ ADMIN_PASSPHRASE=client_secure_passphrase
 2. In Railway: Project → Settings → Domains → Add backend domain
 3. Update DNS records as instructed
 
-### Step 5: Handoff to Client
+### Step 5: Enterprise Integration (Optional - Google Workspace / Microsoft 365)
+
+#### Google Workspace (Gmail + Calendar)
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select existing
+3. Enable Gmail API and Google Calendar API
+4. Create OAuth 2.0 credentials (Web application type)
+5. Add authorized redirect URI: `https://your-backend.railway.app/api/auth/callback`
+6. Add these environment variables to Railway:
+
+```env
+# Google Workspace Integration
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_CALENDAR_ID=primary
+```
+
+#### Microsoft 365 (Outlook Email + Calendar)
+1. Go to [Azure Portal](https://portal.azure.com)
+2. Register a new application in Azure AD
+3. Add permissions: Mail.ReadWrite, Mail.Send, Calendars.ReadWrite
+4. Create a client secret
+5. Add redirect URI: `https://your-backend.railway.app/api/auth/callback`
+6. Add these environment variables to Railway:
+
+```env
+# Microsoft 365 Integration
+OUTLOOK_CLIENT_ID=your_application_client_id
+OUTLOOK_CLIENT_SECRET=your_client_secret
+OUTLOOK_TENANT_ID=your_directory_tenant_id
+```
+
+7. Redeploy on Railway (changes take effect automatically)
+
+#### Twilio Phone Answering (Optional - AI Receptionist)
+1. Go to [Twilio Console](https://console.twilio.com)
+2. Buy a phone number (supports voice calls)
+3. Get your Account SID and Auth Token from Dashboard
+4. Add these environment variables to Railway:
+
+```env
+# Twilio Phone Answering
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+5. Configure the phone number webhook:
+   - Go to Phone Numbers → Manage → Active Numbers
+   - Click your number
+   - Under "Voice & Fax" → "A CALL COMES IN"
+   - Select "Webhook" and enter: `https://your-backend.railway.app/api/twilio/voice`
+   - Set method to "HTTP POST"
+   - Click "Save"
+
+6. Redeploy on Railway (changes take effect automatically)
+
+**Features when enabled:**
+- AI answers calls automatically
+- Natural voice conversation
+- Can schedule appointments, take messages, answer FAQs
+- Transcribes calls and stores in system
+- 24/7 availability
+
+### Step 6: Handoff to Client
 Send client:
 - Frontend URL: `https://acme-assistant.vercel.app`
 - Admin passphrase (set in `ADMIN_PASSPHRASE`)
 - Brief usage instructions (see Part 2 below)
+- Enterprise integration status (if configured)
 
 ---
 
