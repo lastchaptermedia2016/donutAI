@@ -7,9 +7,6 @@ name = "donut-backend"
 version = "0.1.0"
 description = "Donut AI - Executive Function Co-Pilot Backend"
 requires-python = ">=3.11"
-
-[tool.hatch.build.targets.wheel]
-packages = ["app"]
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
@@ -39,6 +36,9 @@ dependencies = [
     "google-auth-httplib2>=0.2.0",
     "google-auth-oauthlib>=1.1.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
 
 [project.optional-dependencies]
 dev = [

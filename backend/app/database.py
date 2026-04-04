@@ -497,3 +497,82 @@ async def get_stats(user_id: str) -> dict:
             "active_reminders": 0,
             "total_conversations": 0,
         }
+
+
+# ============================================
+# AI Settings Operations
+# ============================================
+
+# Default AI settings
+DEFAULT_AI_SETTINGS = {
+    "personality_tone": "warm",
+    "response_length": "balanced",
+    "formality_level": 5,
+    "emotion": "neutral",
+    "tts_voice": "autumn",
+    "tts_speed": 1.0,
+    "tts_provider": "groq",
+    "llm_temperature": 0.7,
+    "llm_max_tokens": 1024,
+}
+
+
+async def get_ai_settings(user_id: str) -> dict:
+    """Get AI settings for a user."""
+    try:
+        supabase = get_supabase_client()
+        response = supabase.table("ai_settings").select("*").eq("user_id", user_id).execute()
+        if response.data:
+            # Merge with defaults for any missing fields
+            settings = {**DEFAULT_AI_SETTINGS, **response.data[0]}
+            # Remove user_id from returned settings
+            settings.pop("user_id", None)
+            return settings
+        return DEFAULT_AI_SETTINGS.copy()
+    except Exception as e:
+        logger.error(f"Error getting AI settings: {e}")
+        return DEFAULT_AI_SETTINGS.copy()
+
+
+async def update_ai_settings(user_id: str, **kwargs) -> dict:
+    """Update AI settings for a user."""
+    try:
+        supabase = get_supabase_client()
+        
+        # Filter out invalid keys
+        valid_keys = set(DEFAULT_AI_SETTINGS.keys()) | {"user_id"}
+        data = {k: v for k, v in kwargs.items() if k in valid_keys}
+        
+        if not data:
+            return await get_ai_settings(user_id)
+        
+        # Check if settings exist for user
+        existing = supabase.table("ai_settings").select("user_id").eq("user_id", user_id).execute()
+        
+        if existing.data:
+            # Update existing
+            response = supabase.table("ai_settings").update(data).eq("user_id", user_id).execute()
+        else:
+            # Insert new
+            data["user_id"] = user_id
+            response = supabase.table("ai_settings").insert(data).execute()
+        
+        if response.data:
+            result = {**DEFAULT_AI_SETTINGS, **response.data[0]}
+            result.pop("user_id", None)
+            return result
+        return await get_ai_settings(user_id)
+    except Exception as e:
+        logger.error(f"Error updating AI settings: {e}")
+        return await get_ai_settings(user_id)
+
+
+async def reset_ai_settings(user_id: str) -> dict:
+    """Reset AI settings to defaults for a user."""
+    try:
+        supabase = get_supabase_client()
+        supabase.table("ai_settings").delete().eq("user_id", user_id).execute()
+        return DEFAULT_AI_SETTINGS.copy()
+    except Exception as e:
+        logger.error(f"Error resetting AI settings: {e}")
+        return DEFAULT_AI_SETTINGS.copy()

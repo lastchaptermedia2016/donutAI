@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 # Copy backend requirements and install
 COPY backend/pyproject.toml .
 RUN pip install --upgrade pip && \
-    pip install -e .[dev]
+    pip install -e .
 
 # Copy backend application
 COPY backend/app/ ./app/

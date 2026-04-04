@@ -1092,6 +1092,125 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "business_name": settings.business_name,
         }
 
+    # --- AI Settings Routes ---
+
+    @app.get("/api/ai-settings", tags=["AI Settings"])
+    async def get_ai_settings():
+        """Get current AI settings (personality, voice, model parameters)."""
+        try:
+            from .database import get_ai_settings
+            # Use a default user_id for now (single user mode)
+            settings = await get_ai_settings(user_id="default")
+            return settings
+        except Exception as e:
+            logger.error(f"Error fetching AI settings: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.put("/api/ai-settings", tags=["AI Settings"])
+    async def update_ai_settings(request: dict):
+        """Update AI settings (personality, voice, model parameters)."""
+        try:
+            from .database import update_ai_settings
+            # Use a default user_id for now (single user mode)
+            settings = await update_ai_settings(user_id="default", **request)
+            return settings
+        except Exception as e:
+            logger.error(f"Error updating AI settings: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/api/ai-settings/reset", tags=["AI Settings"])
+    async def reset_ai_settings():
+        """Reset AI settings to defaults."""
+        try:
+            from .database import reset_ai_settings
+            # Use a default user_id for now (single user mode)
+            settings = await reset_ai_settings(user_id="default")
+            return settings
+        except Exception as e:
+            logger.error(f"Error resetting AI settings: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/api/ai-settings/options", tags=["AI Settings"])
+    async def get_ai_settings_options():
+        """Get available options for AI settings (tones, voices, etc.)."""
+        return {
+            "personality_tone": {
+                "options": [
+                    {"value": "warm", "label": "Warm & Supportive", "description": "Friendly and empathetic"},
+                    {"value": "professional", "label": "Professional", "description": "Formal and business-focused"},
+                    {"value": "casual", "label": "Casual", "description": "Relaxed and conversational"},
+                    {"value": "formal", "label": "Formal", "description": "Very proper and structured"},
+                    {"value": "humorous", "label": "Humorous", "description": "Playful with occasional wit"},
+                    {"value": "empathetic", "label": "Empathetic", "description": "Highly understanding and caring"},
+                ],
+                "default": "warm"
+            },
+            "response_length": {
+                "options": [
+                    {"value": "concise", "label": "Concise", "description": "Brief and to the point"},
+                    {"value": "balanced", "label": "Balanced", "description": "Medium length responses"},
+                    {"value": "detailed", "label": "Detailed", "description": "Comprehensive and thorough"},
+                ],
+                "default": "balanced"
+            },
+            "emotion": {
+                "options": [
+                    {"value": "neutral", "label": "Neutral", "description": "Balanced emotional tone"},
+                    {"value": "cheerful", "label": "Cheerful", "description": "Upbeat and positive"},
+                    {"value": "calm", "label": "Calm", "description": "Soothing and relaxed"},
+                    {"value": "energetic", "label": "Energetic", "description": "Enthusiastic and dynamic"},
+                ],
+                "default": "neutral"
+            },
+            "tts_voice": {
+                "options": [
+                    {"value": "autumn", "label": "Autumn", "description": "Warm female voice"},
+                    {"value": "echo", "label": "Echo", "description": "Deep male voice"},
+                    {"value": "onyx", "label": "Onyx", "description": "Rich male voice"},
+                    {"value": "nova", "label": "Nova", "description": "Clear female voice"},
+                ],
+                "default": "autumn"
+            },
+            "tts_provider": {
+                "options": [
+                    {"value": "groq", "label": "Groq", "description": "Fast, efficient TTS"},
+                    {"value": "elevenlabs", "label": "ElevenLabs", "description": "Premium quality voices"},
+                    {"value": "openai", "label": "OpenAI", "description": "High-quality TTS"},
+                ],
+                "default": "groq"
+            },
+            "formality_level": {
+                "min": 1,
+                "max": 10,
+                "default": 5,
+                "labels": {
+                    "1": "Very Casual",
+                    "5": "Balanced",
+                    "10": "Very Formal"
+                }
+            },
+            "tts_speed": {
+                "min": 0.5,
+                "max": 2.0,
+                "default": 1.0,
+                "step": 0.1
+            },
+            "llm_temperature": {
+                "min": 0.1,
+                "max": 1.0,
+                "default": 0.7,
+                "step": 0.05,
+                "description": "Lower = more focused, Higher = more creative"
+            },
+            "llm_max_tokens": {
+                "min": 256,
+                "max": 4096,
+                "default": 1024,
+                "step": 256,
+                "description": "Maximum response length"
+            }
+        }
+
     # --- WebSocket Route ---
 
     @app.websocket("/ws/chat")

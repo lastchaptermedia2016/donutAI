@@ -34,6 +34,20 @@ const config: Config = {
           amber: "#C89B3C",
           bronze: "#A67C52",
         },
+        // Sophisticated Dark Theme Palette
+        sophisticated: {
+          midnight: "#1C2333", // 220 24% 15%
+          slate: "#272D3D", // 220 16% 20%
+          platinum: "#EDEDF5", // 220 16% 95%
+          champagne: "#F5F5F9", // 220 20% 98%
+          burgundy: "#4A3636", // 0 30% 30% - lighter for visibility
+          emerald: "#3D4A3D", // 120 25% 25% - lighter for visibility
+          gold: "#D4AF37", // 50 80% 60%
+          silver: "#CCCCCC", // 0 0% 80%
+          taupe: "#D9D9E6", // 220 12% 85% - light text
+          charcoal: "#40404D", // 220 12% 30% - lighter for visibility
+          ivory: "#F5F0E8", // 50 20% 95% - bright text
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
