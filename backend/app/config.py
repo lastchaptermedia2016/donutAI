@@ -105,6 +105,23 @@ class Settings(BaseSettings):
         description="Model for embedding memories",
     )
 
+    # ============================================
+    # White-Label Branding Configuration
+    # ============================================
+    # These settings allow full customization for reselling
+    app_name: str = Field(default="Donut", description="Main application name")
+    app_description: str = Field(
+        default="Executive Function Co-Pilot",
+        description="Application tagline/description",
+    )
+    app_logo_emoji: str = Field(default="🍩", description="Emoji used as logo")
+    brand_primary_color: str = Field(
+        default="#FFBF00", description="Primary brand color (hex)"
+    )
+    brand_secondary_color: str = Field(
+        default="#FFF8DC", description="Secondary brand color/background (hex)"
+    )
+
     # Receptionist Settings
     business_name: str = Field(default="Donut Receptionist")
     working_hours_start: int = Field(default=9, description="Start hour (0-23)")

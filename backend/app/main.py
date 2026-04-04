@@ -226,8 +226,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/", tags=["Health"])
     async def root():
         """Health check endpoint."""
+        settings = get_settings()
         return {
-            "name": "Donut AI",
+            "name": settings.app_name,
+            "description": settings.app_description,
             "version": "0.1.0",
             "status": "healthy",
             "uptime_seconds": time.time() - START_TIME,
@@ -620,9 +622,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
             reminders = await reminder_tool.list_reminders()
 
+            settings = get_settings()
             return {
                 "mode": "active",
-                "business_name": "Donut Receptionist",
+                "business_name": settings.business_name,
                 "working_hours": appt_tool._working_hours,
                 "total_unread_emails": unread,
                 "upcoming_appointments": len(appts),
@@ -1075,6 +1078,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except Exception as e:
             logger.error(f"Error fetching voice providers: {e}", exc_info=True)
             return {"tts": ["browser"], "stt": ["browser"]}
+
+    @app.get("/api/branding", tags=["Branding"])
+    async def get_branding():
+        """Get white-label branding configuration for the frontend."""
+        settings = get_settings()
+        return {
+            "app_name": settings.app_name,
+            "app_description": settings.app_description,
+            "app_logo_emoji": settings.app_logo_emoji,
+            "brand_primary_color": settings.brand_primary_color,
+            "brand_secondary_color": settings.brand_secondary_color,
+            "business_name": settings.business_name,
+        }
 
     # --- WebSocket Route ---
 
