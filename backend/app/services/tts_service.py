@@ -37,24 +37,26 @@ class TTSService:
         if self._initialised:
             return True
 
+        logger.info(f"Initializing TTS provider: {self._provider}")
+
         if self._provider == "groq":
             try:
                 from groq import AsyncGroq
                 from ..config import get_settings
                 settings = get_settings()
                 if not settings.groq_api_key:
-                    logger.warning("Groq API key not configured")
+                    logger.warning("Groq API key not configured - TTS will fall back to next provider")
                     return False
                 self._engine = AsyncGroq(api_key=settings.groq_api_key)
                 self._engine_type = "groq"
                 self._initialised = True
-                logger.info("Groq TTS engine initialized")
+                logger.info("Groq TTS engine initialized successfully with model canopylabs/orpheus-v1-english")
                 return True
             except ImportError:
-                logger.error("groq not installed - cannot use Groq TTS")
+                logger.error("groq package not installed - cannot use Groq TTS")
                 return False
             except Exception as e:
-                logger.error(f"Failed to initialize Groq TTS: {e}")
+                logger.error(f"Failed to initialize Groq TTS: {type(e).__name__}: {e}")
                 return False
 
         elif self._provider == "elevenlabs":
