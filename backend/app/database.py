@@ -1,17 +1,61 @@
-"""Supabase database client for Donut AI.
+"""Supabase database client for Donut AI with SQLite fallback.
 
 This module provides:
 - Supabase client initialization
+- SQLite fallback for when Supabase is unavailable
 - Database operations for all tables
 - pgvector integration for semantic search
 - Row Level Security (RLS) support
 """
 
 import logging
+import sqlite3
+import json
+import os
 from typing import Optional, Any
 from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# SQLite fallback for AI Settings
+_SQLITE_DB_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "data",
+    "donut_local.db"
+)
+
+def _get_sqlite_connection():
+    """Get SQLite connection for fallback storage."""
+    # Ensure data directory exists
+    os.makedirs(os.path.dirname(_SQLITE_DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(_SQLITE_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def _init_sqlite_ai_settings():
+    """Initialize SQLite table for AI settings fallback."""
+    try:
+        conn = _get_sqlite_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ai_settings (
+                user_id TEXT PRIMARY KEY,
+                personality_tone TEXT DEFAULT 'warm',
+                response_length TEXT DEFAULT 'balanced',
+                formality_level INTEGER DEFAULT 5,
+                emotion TEXT DEFAULT 'neutral',
+                tts_voice TEXT DEFAULT 'autumn',
+                tts_speed REAL DEFAULT 1.0,
+                tts_provider TEXT DEFAULT 'groq',
+                llm_temperature REAL DEFAULT 0.7,
+                llm_max_tokens INTEGER DEFAULT 1024
+            )
+        """)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.error(f"Failed to initialize SQLite AI settings table: {e}")
 
 # Global Supabase client
 _supabase_client: Optional[Any] = None
@@ -517,8 +561,70 @@ DEFAULT_AI_SETTINGS = {
 }
 
 
+def _get_ai_settings_sqlite(user_id: str) -> Optional[dict]:
+    """Get AI settings from SQLite fallback."""
+    try:
+        _init_sqlite_ai_settings()
+        conn = _get_sqlite_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM ai_settings WHERE user_id = ?", (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            settings = dict(row)
+            settings.pop("user_id", None)
+            return {**DEFAULT_AI_SETTINGS, **settings}
+        return None
+    except Exception as e:
+        logger.error(f"Error getting AI settings from SQLite: {e}")
+        return None
+
+
+def _update_ai_settings_sqlite(user_id: str, **kwargs) -> dict:
+    """Update AI settings in SQLite fallback."""
+    try:
+        _init_sqlite_ai_settings()
+        conn = _get_sqlite_connection()
+        cursor = conn.cursor()
+        
+        # Filter out invalid keys and user_id
+        valid_keys = set(DEFAULT_AI_SETTINGS.keys())
+        data = {k: v for k, v in kwargs.items() if k in valid_keys}
+        
+        if not data:
+            conn.close()
+            return DEFAULT_AI_SETTINGS.copy()
+        
+        # Check if exists
+        cursor.execute("SELECT user_id FROM ai_settings WHERE user_id = ?", (user_id,))
+        exists = cursor.fetchone()
+        
+        if exists:
+            # Update
+            set_clause = ", ".join([f"{k} = ?" for k in data.keys()])
+            values = list(data.values()) + [user_id]
+            cursor.execute(f"UPDATE ai_settings SET {set_clause} WHERE user_id = ?", values)
+        else:
+            # Insert
+            data["user_id"] = user_id
+            columns = ", ".join(data.keys())
+            placeholders = ", ".join(["?" for _ in data])
+            cursor.execute(f"INSERT INTO ai_settings ({columns}) VALUES ({placeholders})", list(data.values()))
+        
+        conn.commit()
+        conn.close()
+        
+        result = {**DEFAULT_AI_SETTINGS, **data}
+        result.pop("user_id", None)
+        return result
+    except Exception as e:
+        logger.error(f"Error updating AI settings in SQLite: {e}")
+        return DEFAULT_AI_SETTINGS.copy()
+
+
 async def get_ai_settings(user_id: str) -> dict:
-    """Get AI settings for a user."""
+    """Get AI settings for a user. Falls back to SQLite if Supabase fails."""
     try:
         supabase = get_supabase_client()
         response = supabase.table("ai_settings").select("*").eq("user_id", user_id).execute()
@@ -528,14 +634,25 @@ async def get_ai_settings(user_id: str) -> dict:
             # Remove user_id from returned settings
             settings.pop("user_id", None)
             return settings
+        
+        # Check SQLite fallback
+        sqlite_settings = _get_ai_settings_sqlite(user_id)
+        if sqlite_settings:
+            logger.info(f"Using SQLite fallback for AI settings (user: {user_id})")
+            return sqlite_settings
+        
         return DEFAULT_AI_SETTINGS.copy()
     except Exception as e:
-        logger.error(f"Error getting AI settings: {e}")
+        logger.warning(f"Supabase failed for AI settings, using SQLite fallback: {e}")
+        # Try SQLite fallback
+        sqlite_settings = _get_ai_settings_sqlite(user_id)
+        if sqlite_settings:
+            return sqlite_settings
         return DEFAULT_AI_SETTINGS.copy()
 
 
 async def update_ai_settings(user_id: str, **kwargs) -> dict:
-    """Update AI settings for a user."""
+    """Update AI settings for a user. Falls back to SQLite if Supabase fails."""
     try:
         supabase = get_supabase_client()
         
@@ -560,11 +677,14 @@ async def update_ai_settings(user_id: str, **kwargs) -> dict:
         if response.data:
             result = {**DEFAULT_AI_SETTINGS, **response.data[0]}
             result.pop("user_id", None)
+            # Also update SQLite for backup
+            _update_ai_settings_sqlite(user_id, **{k: v for k, v in result.items()})
             return result
         return await get_ai_settings(user_id)
     except Exception as e:
-        logger.error(f"Error updating AI settings: {e}")
-        return await get_ai_settings(user_id)
+        logger.warning(f"Supabase failed for AI settings update, using SQLite fallback: {e}")
+        # Fallback to SQLite
+        return _update_ai_settings_sqlite(user_id, **kwargs)
 
 
 async def reset_ai_settings(user_id: str) -> dict:
@@ -572,7 +692,17 @@ async def reset_ai_settings(user_id: str) -> dict:
     try:
         supabase = get_supabase_client()
         supabase.table("ai_settings").delete().eq("user_id", user_id).execute()
-        return DEFAULT_AI_SETTINGS.copy()
     except Exception as e:
-        logger.error(f"Error resetting AI settings: {e}")
-        return DEFAULT_AI_SETTINGS.copy()
+        logger.error(f"Error resetting AI settings in Supabase: {e}")
+    
+    # Always reset SQLite as well
+    try:
+        conn = _get_sqlite_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM ai_settings WHERE user_id = ?", (user_id,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.error(f"Error resetting AI settings in SQLite: {e}")
+    
+    return DEFAULT_AI_SETTINGS.copy()

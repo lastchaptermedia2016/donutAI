@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAppState } from "@/components/providers";
 import { BACKEND_URL } from "@/lib/utils";
 import Link from "next/link";
+import { MagneticButton } from "@/components/ui";
 import {
   MessageSquare,
   CheckSquare,
@@ -133,7 +134,7 @@ export default function ConsolePage() {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <h1 className="text-xl font-bold">
+              <h1 className="text-xl font-bold text-sophisticated-ivory">
                 {navItems.find((n) => n.id === activeTab)?.label || "Console"}
               </h1>
             </div>
@@ -265,12 +266,12 @@ function StatCard({
   };
 
   return (
-    <div className="bg-sophisticated-midnight/50 rounded-xl p-4 border border-sophisticated-charcoal/30">
+    <div className="luxury-glass-card rounded-xl p-4 holographic float-depth">
       <div className={`flex items-center gap-2 text-sm w-fit px-2 py-1 rounded-lg ${colorClasses[color]}`}>
         <Icon className="w-4 h-4" />
         {title}
       </div>
-      <p className="text-2xl font-bold mt-2 text-sophisticated-ivory">{value}</p>
+      <p className="text-2xl font-bold mt-2 text-sophisticated-ivory gold-gradient-text">{value}</p>
     </div>
   );
 }
@@ -294,28 +295,46 @@ function ConversationsTab() {
 
   if (conversations.length === 0) {
     return (
-      <div className="bg-sophisticated-midnight/50 rounded-xl p-6 border border-sophisticated-charcoal/30 text-center">
+      <div className="bg-sophisticated-midnight/50 rounded-xl p-8 border border-sophisticated-charcoal/30 text-center">
         <MessageSquare className="w-12 h-12 mx-auto text-sophisticated-taupe mb-4" />
-        <p className="text-sophisticated-taupe">No conversations yet</p>
+        <h3 className="font-medium text-sophisticated-ivory text-lg">No conversations yet</h3>
+        <p className="text-sophisticated-taupe mt-2">Start chatting with Donut to see your conversation history here</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {conversations.map((conv) => (
         <div
           key={conv.id}
-          className="bg-sophisticated-midnight/50 rounded-xl p-4 border border-sophisticated-charcoal/30"
+          className="bg-sophisticated-midnight/50 rounded-xl p-5 border border-sophisticated-charcoal/30 hover:border-sophisticated-burgundy/40 transition-colors"
         >
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sophisticated-ivory truncate">{conv.user_message}</p>
-              <p className="text-sm text-sophisticated-taupe mt-1">{conv.agent_response?.substring(0, 100)}...</p>
+          <div className="flex flex-col gap-3">
+            {/* User Message */}
+            <div className="flex items-start gap-3">
+              <span className="text-xs font-semibold text-sophisticated-gold uppercase tracking-wide mt-0.5">You</span>
+              <p className="font-medium text-sophisticated-ivory break-words flex-1">{conv.user_message}</p>
             </div>
-            <div className="text-xs text-sophisticated-taupe whitespace-nowrap flex flex-col md:items-end gap-1">
-              <div className="px-2 py-1 rounded bg-sophisticated-charcoal/50 text-sophisticated-ivory">{conv.context_mode}</div>
-              <div>{new Date(conv.created_at).toLocaleString()}</div>
+            
+            {/* Agent Response */}
+            <div className="flex items-start gap-3">
+              <span className="text-xs font-semibold text-sophisticated-burgundy uppercase tracking-wide mt-0.5">Donut</span>
+              <p className="text-sm text-sophisticated-taupe break-words flex-1 leading-relaxed">
+                {conv.agent_response?.length > 200 
+                  ? `${conv.agent_response.substring(0, 200)}...` 
+                  : conv.agent_response}
+              </p>
+            </div>
+
+            {/* Meta Information */}
+            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-sophisticated-charcoal/20">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium bg-sophisticated-burgundy/20 text-sophisticated-burgundy border border-sophisticated-burgundy/30`}>
+                {conv.context_mode || 'Neutral'}
+              </span>
+              <span className="text-xs text-sophisticated-taupe">
+                {new Date(conv.created_at).toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
@@ -342,18 +361,26 @@ function TasksTab() {
 
   if (tasks.length === 0) {
     return (
-      <div className="bg-sophisticated-midnight/50 rounded-xl p-6 border border-sophisticated-charcoal/30 text-center">
+      <div className="bg-sophisticated-midnight/50 rounded-xl p-8 border border-sophisticated-charcoal/30 text-center">
         <CheckSquare className="w-12 h-12 mx-auto text-sophisticated-taupe mb-4" />
-        <p className="text-sophisticated-taupe">No tasks yet</p>
+        <h3 className="font-medium text-sophisticated-ivory text-lg">No tasks yet</h3>
+        <p className="text-sophisticated-taupe mt-2">Ask Donut to create a task and it will appear here</p>
       </div>
     );
   }
 
   const priorityColors: Record<string, string> = {
-    urgent: "bg-sophisticated-burgundy",
-    high: "bg-sophisticated-emerald",
-    medium: "bg-sophisticated-gold",
-    low: "bg-sophisticated-silver",
+    urgent: "bg-sophisticated-burgundy shadow-lg shadow-sophisticated-burgundy/50",
+    high: "bg-sophisticated-emerald shadow-lg shadow-sophisticated-emerald/50",
+    medium: "bg-sophisticated-gold shadow-lg shadow-sophisticated-gold/50",
+    low: "bg-sophisticated-silver shadow-lg shadow-sophisticated-silver/50",
+  };
+
+  const priorityLabels: Record<string, string> = {
+    urgent: "Urgent",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
   };
 
   return (
@@ -361,18 +388,42 @@ function TasksTab() {
       {tasks.map((task) => (
         <div
           key={task.id}
-          className="bg-sophisticated-midnight/50 rounded-xl p-4 border border-sophisticated-charcoal/30 flex flex-col md:flex-row md:items-center gap-3"
+          className="bg-sophisticated-midnight/50 rounded-xl p-5 border border-sophisticated-charcoal/30 hover:border-sophisticated-emerald/40 transition-colors"
         >
-          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${priorityColors[task.priority] || "bg-sophisticated-taupe"}`} />
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sophisticated-ivory">{task.title}</p>
-            {task.description && (
-              <p className="text-sm text-sophisticated-taupe truncate">{task.description}</p>
-            )}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start gap-4">
+              {/* Priority Indicator */}
+              <div className="flex flex-col items-center gap-1 mt-0.5">
+                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${priorityColors[task.priority] || "bg-sophisticated-taupe"}`} />
+                <span className="text-[10px] text-sophisticated-taupe uppercase tracking-wide">
+                  {priorityLabels[task.priority] || task.priority}
+                </span>
+              </div>
+              
+              {/* Task Content */}
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sophisticated-ivory break-words">{task.title}</h4>
+                {task.description && (
+                  <p className="text-sm text-sophisticated-taupe mt-1 break-words leading-relaxed">
+                    {task.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Task Meta */}
+            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-sophisticated-charcoal/20">
+              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-sophisticated-burgundy/20 text-sophisticated-burgundy border border-sophisticated-burgundy/30">
+                {task.context_mode || 'Neutral'}
+              </span>
+              {task.due_date && (
+                <span className="text-xs text-sophisticated-taupe flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {new Date(task.due_date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-xs text-sophisticated-ivory px-2 py-1 rounded bg-sophisticated-charcoal/50 whitespace-nowrap self-start md:self-auto">
-            {task.context_mode}
-          </span>
         </div>
       ))}
     </div>
@@ -518,12 +569,34 @@ interface SettingsOptions {
   };
 }
 
+// Default slider configurations (used when API fails)
+const DEFAULT_SLIDER_CONFIG = {
+  formality_level: { min: 1, max: 10, step: 1, default: 5 },
+  tts_speed: { min: 0.5, max: 2.0, step: 0.1, default: 1.0 },
+  llm_temperature: { min: 0.1, max: 1.0, step: 0.05, default: 0.7 },
+  llm_max_tokens: { min: 256, max: 4096, step: 256, default: 1024 },
+};
+
+// Debounce utility for slider updates
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 function AISettingsSection() {
   const [settings, setSettings] = useState<AISettings | null>(null);
   const [options, setOptions] = useState<SettingsOptions | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  // Local slider values for immediate feedback during drag
+  const [localSliderValues, setLocalSliderValues] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchAISettings();
@@ -535,6 +608,7 @@ function AISettingsSection() {
       const res = await fetch(`${BACKEND_URL}/api/ai-settings`);
       const data = await res.json();
       setSettings(data);
+      console.log("AI Settings loaded:", data);
     } catch (e) {
       console.error("Failed to fetch AI settings:", e);
     } finally {
@@ -547,11 +621,82 @@ function AISettingsSection() {
       const res = await fetch(`${BACKEND_URL}/api/ai-settings/options`);
       const data = await res.json();
       setOptions(data);
+      console.log("AI Settings options loaded:", data);
     } catch (e) {
       console.error("Failed to fetch AI settings options:", e);
+      // Options fetch failure is not critical - sliders will use defaults
     }
   };
 
+  // Helper to get slider config with fallbacks
+  const getSliderConfig = (key: keyof typeof DEFAULT_SLIDER_CONFIG) => {
+    const config = options?.[key];
+    const defaults = DEFAULT_SLIDER_CONFIG[key];
+    return {
+      min: config?.min ?? defaults.min,
+      max: config?.max ?? defaults.max,
+      step: config?.step ?? defaults.step,
+      default: config?.default ?? defaults.default,
+    };
+  };
+
+  // Debounced API call to avoid rate limiting
+  const debouncedUpdateSetting = useCallback(
+    debounce(async (key: string, value: any) => {
+      if (!settings) return;
+      
+      setSaving(true);
+      setMessage(null);
+      
+      try {
+        console.log(`Saving ${key} = ${value}`);
+        const res = await fetch(`${BACKEND_URL}/api/ai-settings`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [key]: value }),
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+          setMessage({ type: 'success', text: 'Settings saved successfully' });
+        } else if (res.status === 429) {
+          setMessage({ type: 'error', text: 'Too many requests. Please wait a moment.' });
+        } else {
+          throw new Error('Failed to save settings');
+        }
+      } catch (e: any) {
+        console.error("Failed to save AI settings:", e);
+        setMessage({ type: 'error', text: e.message || 'Failed to save settings' });
+      } finally {
+        setSaving(false);
+        setTimeout(() => setMessage(null), 3000);
+      }
+    }, 500), // 500ms debounce delay
+    [settings]
+  );
+
+  // Handler for slider changes - updates local state immediately, API call is debounced
+  const handleSliderChange = (key: string, value: number) => {
+    // Update local state for immediate visual feedback
+    setLocalSliderValues(prev => ({ ...prev, [key]: value }));
+    // Debounced API call
+    debouncedUpdateSetting(key, value);
+  };
+
+  // Get the current value for a slider (local or from settings)
+  const getSliderValue = (key: string, defaultValue: number): number => {
+    if (localSliderValues[key] !== undefined) {
+      return localSliderValues[key];
+    }
+    const value = settings?.[key as keyof AISettings];
+    if (typeof value === 'number') {
+      return value;
+    }
+    return defaultValue;
+  };
+
+  // Direct update for non-slider inputs (dropdowns)
   const updateSetting = async (key: string, value: any) => {
     if (!settings) return;
     
@@ -569,12 +714,14 @@ function AISettingsSection() {
         const data = await res.json();
         setSettings(data);
         setMessage({ type: 'success', text: 'Settings saved successfully' });
+      } else if (res.status === 429) {
+        setMessage({ type: 'error', text: 'Too many requests. Please wait a moment.' });
       } else {
         throw new Error('Failed to save settings');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to save AI settings:", e);
-      setMessage({ type: 'error', text: 'Failed to save settings' });
+      setMessage({ type: 'error', text: e.message || 'Failed to save settings' });
     } finally {
       setSaving(false);
       setTimeout(() => setMessage(null), 3000);
@@ -696,21 +843,23 @@ function AISettingsSection() {
 
         {/* Formality Level */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-sophisticated-ivory">
-            Formality Level: {settings?.formality_level || 5}
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-sophisticated-ivory">Formality Level</label>
+            <span className="text-sm font-bold text-sophisticated-gold">{getSliderValue('formality_level', 5)}</span>
+          </div>
           <input
             type="range"
             min={options?.formality_level?.min || 1}
             max={options?.formality_level?.max || 10}
-            value={settings?.formality_level || 5}
-            onChange={(e) => updateSetting('formality_level', parseInt(e.target.value))}
-            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold transition-all"
+            step={options?.formality_level?.step || 1}
+            value={getSliderValue('formality_level', 5)}
+            onChange={(e) => handleSliderChange('formality_level', parseInt(e.target.value))}
+            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold active:accent-sophisticated-gold transition-all"
           />
           <div className="flex justify-between text-xs text-sophisticated-taupe">
-            <span>{options?.formality_level?.labels?.['1']}</span>
-            <span>{options?.formality_level?.labels?.['5']}</span>
-            <span>{options?.formality_level?.labels?.['10']}</span>
+            <span>Casual</span>
+            <span>Balanced</span>
+            <span>Formal</span>
           </div>
         </div>
 
@@ -732,17 +881,18 @@ function AISettingsSection() {
 
         {/* TTS Speed */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-sophisticated-ivory">
-            Voice Speed: {settings?.tts_speed?.toFixed(1) || '1.0'}x
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-sophisticated-ivory">Voice Speed</label>
+            <span className="text-sm font-bold text-sophisticated-gold">{getSliderValue('tts_speed', 1.0).toFixed(1)}x</span>
+          </div>
           <input
             type="range"
             min={options?.tts_speed?.min || 0.5}
             max={options?.tts_speed?.max || 2.0}
             step={options?.tts_speed?.step || 0.1}
-            value={settings?.tts_speed || 1.0}
-            onChange={(e) => updateSetting('tts_speed', parseFloat(e.target.value))}
-            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold transition-all"
+            value={getSliderValue('tts_speed', 1.0)}
+            onChange={(e) => handleSliderChange('tts_speed', parseFloat(e.target.value))}
+            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold active:accent-sophisticated-gold transition-all"
           />
           <div className="flex justify-between text-xs text-sophisticated-taupe">
             <span>0.5x</span>
@@ -772,42 +922,44 @@ function AISettingsSection() {
 
         {/* LLM Temperature */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-sophisticated-ivory">
-            Creativity (Temperature): {settings?.llm_temperature?.toFixed(2) || '0.70'}
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-sophisticated-ivory">Creativity (Temperature)</label>
+            <span className="text-sm font-bold text-sophisticated-gold">{getSliderValue('llm_temperature', 0.7).toFixed(2)}</span>
+          </div>
           <input
             type="range"
             min={options?.llm_temperature?.min || 0.1}
             max={options?.llm_temperature?.max || 1.0}
             step={options?.llm_temperature?.step || 0.05}
-            value={settings?.llm_temperature || 0.7}
-            onChange={(e) => updateSetting('llm_temperature', parseFloat(e.target.value))}
-            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold transition-all"
+            value={getSliderValue('llm_temperature', 0.7)}
+            onChange={(e) => handleSliderChange('llm_temperature', parseFloat(e.target.value))}
+            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold active:accent-sophisticated-gold transition-all"
           />
           <div className="flex justify-between text-xs text-sophisticated-taupe">
             <span>Focused</span>
-            <span>{options?.llm_temperature?.description}</span>
+            <span>Balanced</span>
             <span>Creative</span>
           </div>
         </div>
 
         {/* LLM Max Tokens */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-sophisticated-ivory">
-            Max Response Length: {settings?.llm_max_tokens || 1024} tokens
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-sophisticated-ivory">Max Response Length</label>
+            <span className="text-sm font-bold text-sophisticated-gold">{getSliderValue('llm_max_tokens', 1024)}</span>
+          </div>
           <input
             type="range"
             min={options?.llm_max_tokens?.min || 256}
             max={options?.llm_max_tokens?.max || 4096}
             step={options?.llm_max_tokens?.step || 256}
-            value={settings?.llm_max_tokens || 1024}
-            onChange={(e) => updateSetting('llm_max_tokens', parseInt(e.target.value))}
-            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold transition-all"
+            value={getSliderValue('llm_max_tokens', 1024)}
+            onChange={(e) => handleSliderChange('llm_max_tokens', parseInt(e.target.value))}
+            className="w-full h-2 bg-sophisticated-charcoal/50 rounded-lg appearance-none cursor-pointer accent-sophisticated-burgundy hover:accent-sophisticated-gold active:accent-sophisticated-gold transition-all"
           />
           <div className="flex justify-between text-xs text-sophisticated-taupe">
             <span>Short</span>
-            <span>{options?.llm_max_tokens?.description}</span>
+            <span>Medium</span>
             <span>Long</span>
           </div>
         </div>

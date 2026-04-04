@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Billionaire Warm Gold Palette
+        // Billionaire Warm Gold Palette with Deep Blue Accents
         billionaire: {
           black: "#0A0A0A",
           charcoal: "#121212",
@@ -33,6 +33,13 @@ const config: Config = {
           burgundy: "#722F37",
           amber: "#C89B3C",
           bronze: "#A67C52",
+          // Deep Blue Accents
+          deep: {
+            blue: "#0A1628",
+            navy: "#0D1B3E",
+            ocean: "#1A2744",
+            sapphire: "#1E3A5F",
+          },
         },
         // Sophisticated Dark Theme Palette
         sophisticated: {
@@ -60,6 +67,8 @@ const config: Config = {
         "billionaire-lg": "0 8px 24px rgba(201, 169, 110, 0.15)",
         "billionaire-xl": "0 16px 48px rgba(201, 169, 110, 0.2)",
         "gold-glow": "0 0 20px rgba(201, 169, 110, 0.3)",
+        "blue-glow": "0 0 20px rgba(30, 58, 95, 0.4)",
+        "holographic": "0 0 30px rgba(201, 169, 110, 0.2), 0 0 60px rgba(30, 58, 95, 0.15), 0 0 90px rgba(224, 194, 108, 0.1)",
       },
       backdropBlur: {
         xs: "2px",
@@ -71,6 +80,10 @@ const config: Config = {
         "slide-up": "slideUp 0.4s ease-out",
         "scale-in": "scaleIn 0.3s ease-out",
         "float": "float 6s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
+        "gradient-shift": "gradientShift 15s ease infinite",
+        "holographic-shimmer": "holographicShimmer 3s ease-in-out infinite",
+        "particle-float": "particleFloat 20s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -88,6 +101,38 @@ const config: Config = {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        gradientShift: {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        holographicShimmer: {
+          "0%, 100%": { 
+            backgroundPosition: "0% 0%",
+            opacity: "0.6"
+          },
+          "25%": { 
+            backgroundPosition: "100% 0%",
+            opacity: "0.8"
+          },
+          "50%": { 
+            backgroundPosition: "100% 100%",
+            opacity: "1"
+          },
+          "75%": { 
+            backgroundPosition: "0% 100%",
+            opacity: "0.8"
+          },
+        },
+        particleFloat: {
+          "0%": { transform: "translateY(0) translateX(0)", opacity: "0" },
+          "10%": { opacity: "0.6" },
+          "90%": { opacity: "0.6" },
+          "100%": { transform: "translateY(-100vh) translateX(50px)", opacity: "0" },
         },
       },
     },

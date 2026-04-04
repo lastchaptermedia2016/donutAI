@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAppState } from "@/components/providers";
 import { ContextMode, contextConfig, BACKEND_URL } from "@/lib/utils";
 import { useVoice } from "@/hooks/useVoice";
+import { useWakeWordDetection } from "@/hooks/useWakeWordDetection";
 import { DonutLogo } from "@/components/DonutLogo";
 import {
   Mic,
@@ -23,6 +24,8 @@ import {
   BarChart3,
   Volume2,
   VolumeX,
+  Bell,
+  BellOff,
 } from "lucide-react";
 
 interface Message {
@@ -40,17 +43,57 @@ export default function HomePage() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [isVoiceSupported, setIsVoiceSupported] = useState(true);
+  const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const config = contextConfig[contextMode];
+
+  // Voice hook must be called first since wake word detection depends on it
   const { isListening, startListening, stopListening, isSupported, error: voiceError, permissionStatus } = useVoice({
     onResult: (text) => {
       setInputText(text);
       handleSend(text);
     },
   });
+
+  // Wake word detection - when "Donut" is detected, auto-activate voice
+  const handleWakeWordDetected = useCallback(() => {
+    console.log("Wake word detected! Activating voice input...");
+    // Play activation sound
+    if (isTTSEnabled && synthRef.current) {
+      const utterance = new SpeechSynthesisUtterance("Yes?");
+      utterance.rate = 1;
+      utterance.pitch = 1.2;
+      utterance.volume = 0.8;
+      synthRef.current.speak(utterance);
+    }
+    // Start listening for command
+    startListening();
+  }, [startListening, isTTSEnabled]);
+
+  const { 
+    isStandby: isWakeWordStandby, 
+    startStandby: startWakeWordDetection, 
+    stopStandby: stopWakeWordDetection,
+    isSupported: isWakeWordSupported,
+    error: wakeWordError,
+  } = useWakeWordDetection({
+    onWakeWordDetected: handleWakeWordDetected,
+    wakeWord: "donut",
+  });
+
+  // Toggle wake word detection
+  const toggleWakeWord = useCallback(() => {
+    if (isWakeWordEnabled) {
+      stopWakeWordDetection();
+      setIsWakeWordEnabled(false);
+    } else {
+      startWakeWordDetection();
+      setIsWakeWordEnabled(true);
+    }
+  }, [isWakeWordEnabled, startWakeWordDetection, stopWakeWordDetection]);
 
   // Sync isSupported with state to avoid hydration mismatch
   useEffect(() => {
@@ -368,6 +411,22 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={toggleWakeWord}
+                disabled={!isWakeWordSupported}
+                className={`p-2.5 rounded-full transition-all duration-300 ${
+                  isWakeWordEnabled 
+                    ? 'bg-billionaire-gold-500/20 text-billionaire-gold-400 animate-pulse' 
+                    : 'hover:bg-billionaire-gold-500/10 text-billionaire-platinum/70'
+                } ${!isWakeWordSupported ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isWakeWordEnabled ? "Disable wake word detection" : "Enable wake word detection (say 'Donut')"}
+              >
+                {isWakeWordEnabled ? (
+                  <Bell className="w-5 h-5" />
+                ) : (
+                  <BellOff className="w-5 h-5" />
+                )}
+              </button>
+              <button
                 onClick={() => setIsTTSEnabled(!isTTSEnabled)}
                 className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
                 title={isTTSEnabled ? "Disable TTS" : "Enable TTS"}
@@ -501,6 +560,12 @@ export default function HomePage() {
               </div>
             </div>
 
+            {isWakeWordStandby && !isListening && (
+              <p className="text-center text-xs text-billionaire-gold-400/80 animate-pulse max-w-4xl mx-auto">
+                🔔 Standby... say "Donut" to activate
+              </p>
+            )}
+            
             {isListening && (
               <p className="text-center text-xs text-billionaire-gold-400 animate-pulse max-w-4xl mx-auto">
                 🎤 Listening... speak now

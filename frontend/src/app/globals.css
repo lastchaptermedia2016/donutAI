@@ -177,3 +177,247 @@
     box-shadow: 0 0 40px rgba(201, 169, 110, 0.4);
   }
 }
+
+/* ==========================================
+/* LUXURY ENHANCEMENTS - HOLOGRAPHIC & PARTICLES
+/* ========================================== */
+
+/* Gradient Mesh Background */
+.gradient-mesh-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(10, 22, 40, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(30, 58, 95, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(201, 169, 110, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 40%, rgba(224, 194, 108, 0.1) 0%, transparent 50%);
+  animation: gradientShift 20s ease-in-out infinite;
+  background-size: 200% 200%;
+  pointer-events: none;
+}
+
+/* Particle Container */
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(201, 169, 110, 0.4);
+  border-radius: 50%;
+  animation: particleFloat linear infinite;
+  pointer-events: none;
+}
+
+.particle:nth-child(odd) {
+  background: rgba(30, 58, 95, 0.3);
+  width: 1.5px;
+  height: 1.5px;
+}
+
+.particle:nth-child(3n) {
+  background: rgba(224, 194, 108, 0.3);
+  width: 2.5px;
+  height: 2.5px;
+}
+
+/* Holographic Effect */
+.holographic {
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(201, 169, 110, 0.1) 40%,
+    rgba(30, 58, 95, 0.15) 50%,
+    rgba(224, 194, 108, 0.1) 60%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  animation: holographicShimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.holographic::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(201, 169, 110, 0.05) 0%,
+    transparent 50%,
+    rgba(30, 58, 95, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+/* Magnetic Button Base */
+.magnetic-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* Enhanced Glass Card with Multi-layer Effect */
+.luxury-glass-card {
+  background: 
+    linear-gradient(135deg, rgba(18, 18, 18, 0.8) 0%, rgba(26, 26, 26, 0.6) 50%, rgba(45, 45, 45, 0.4) 100%),
+    linear-gradient(135deg, rgba(201, 169, 110, 0.03) 0%, transparent 50%, rgba(30, 58, 95, 0.03) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(201, 169, 110, 0.08);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(201, 169, 110, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxury-glass-card:hover {
+  border-color: rgba(201, 169, 110, 0.2);
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(201, 169, 110, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 30px rgba(201, 169, 110, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Shimmer Loading Effect */
+.shimmer-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(201, 169, 110, 0) 0%,
+    rgba(201, 169, 110, 0.08) 50%,
+    rgba(201, 169, 110, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Deep Blue Accent Border */
+.deep-blue-accent {
+  border-image: linear-gradient(
+    135deg,
+    rgba(10, 22, 40, 0.8),
+    rgba(30, 58, 95, 0.6),
+    rgba(10, 22, 40, 0.8)
+  ) 1;
+}
+
+/* Gold Text Gradient */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C9A96E 0%, #E5C777 50%, #DAB65B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: none;
+}
+
+/* Rose Gold Text Gradient */
+.rose-gold-gradient-text {
+  background: linear-gradient(135deg, #B89857 0%, #C9A96E 50%, #E5C777 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced Input with Deep Blue */
+.luxury-input {
+  background: linear-gradient(135deg, rgba(10, 22, 40, 0.6) 0%, rgba(26, 26, 26, 0.4) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 169, 110, 0.12);
+  transition: all 0.3s ease;
+}
+
+.luxury-input:focus {
+  border-color: rgba(30, 58, 95, 0.5);
+  box-shadow: 
+    0 0 0 1px rgba(30, 58, 95, 0.3),
+    0 0 20px rgba(30, 58, 95, 0.1);
+  outline: none;
+}
+
+/* Floating Animation with Depth */
+.float-depth {
+  animation: floatDepth 6s ease-in-out infinite;
+}
+
+@keyframes floatDepth {
+  0%, 100% { 
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: translateY(-8px) scale(1.01);
+    filter: brightness(1.05);
+  }
+}
+
+/* Noise Texture Overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Smooth Scroll Behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 10, 10, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(201, 169, 110, 0.3) 0%, rgba(30, 58, 95, 0.3) 100%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(201, 169, 110, 0.5) 0%, rgba(30, 58, 95, 0.5) 100%);
+}

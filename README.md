@@ -10,16 +10,20 @@ A multi-modal agentic voice assistant that acts as your Executive Function Co-Pi
 
 ## Features
 
-- **Voice-First Interface**: Speak naturally using Web Speech API (STT) with browser TTS fallback
+- **Voice-First Interface**: Speak naturally using Web Speech API (STT) with multi-provider TTS fallback (Groq → ElevenLabs → xAI → Browser)
 - **Dual Context Management**: Seamlessly switch between Business, Personal, and Neutral modes
 - **Memory System**: Long-term semantic memory via LanceDB vector store + short-term rolling buffer
-- **Task Management**: Create, list, complete, and delete to-do items across contexts
-- **Diary/Journal**: Write and review personal or business diary entries
+- **Task Management**: Create, list, complete, and delete to-do items across contexts with priority levels
+- **Diary/Journal**: Write and review personal or business diary entries with mood tracking
 - **Web Search**: Search the web via DuckDuckGo
 - **Email Management**: Send/read emails via Gmail API (requires Google OAuth)
+- **AI Receptionist**: Automated phone answering with Twilio integration, appointment booking, and reminder system
+- **AI Customization**: Customize personality, voice, tone, and model parameters through the console
+- **White-Label Ready**: Full rebranding support via environment variables (colors, logo, business name)
 - **AI-Powered**: Uses Groq's ultra-fast LLM inference (Llama 3.3 70B)
 - **PWA Support**: Installable on desktop and mobile with offline capabilities
-- **Management Console**: Full dashboard for monitoring conversations, tasks, memories, and system health
+- **Management Console**: Full dashboard for monitoring conversations, tasks, memories, AI settings, and system health
+- **Luxury UI/UX**: Premium interface with holographic effects, magnetic buttons, gradient mesh backgrounds, particle effects, deep blue accents, multi-layer glassmorphism, and shimmer loading effects
 
 ## Architecture
 
@@ -232,6 +236,15 @@ donut-ai/
 - `GET /api/console/conversations` - Conversation history
 - `GET /api/console/system/health` - System health
 
+### AI Settings
+- `GET /api/ai-settings` - Get current AI personality and voice settings
+- `PUT /api/ai-settings` - Update AI settings (personality, voice, model parameters)
+- `POST /api/ai-settings/reset` - Reset AI settings to defaults
+- `GET /api/ai-settings/options` - Get available customization options
+
+### Branding
+- `GET /api/branding` - Get current white-label branding configuration
+
 ## Usage Examples
 
 ### Voice Commands
@@ -263,6 +276,80 @@ Use the sidebar to switch between:
 ```bash
 docker compose up -d
 ```
+
+### Railway Deployment (Recommended for Production)
+
+For production deployment, use Railway with the included `railway.json` configuration:
+
+1. Push your code to GitHub
+2. Connect your repository to Railway
+3. Railway will automatically use `backend/Dockerfile` and start with uvicorn
+4. Configure environment variables in Railway dashboard
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
+
+## Voice Services
+
+Donut includes a robust multi-provider voice system with automatic fallback:
+
+### Wake Word Detection
+- **Wake Words**: "Donut", "Hey Donut", "OK Donut", or "Hello Donut"
+- **Background Listening**: Continuously listens for wake word when enabled
+- **Auto-Activation**: Automatically starts voice input when wake word is detected
+- **Browser Support**: Chrome, Edge, Safari (requires microphone permission)
+
+### Text-to-Speech (TTS)
+- **Primary**: Groq TTS using `canopylabs/orpheus-v1-english` model
+- **Fallback Chain**: Groq → ElevenLabs → xAI → Browser SpeechSynthesis
+- **Customization**: Choose voices (Autumn, Echo, Onyx, Nova) and adjust speed (0.5x - 2.0x)
+
+### Speech-to-Text (STT)
+- **Primary**: Groq Whisper using `whisper-large-v3` model
+- **Fallback**: Browser Web Speech API
+
+### Browser Compatibility
+
+| Browser | Speech Recognition | Speech Synthesis |
+|---------|-------------------|------------------|
+| Chrome  | ✅ Full support   | ✅ Full support  |
+| Edge    | ✅ Full support   | ✅ Full support  |
+| Safari  | ⚠️ Limited        | ✅ Full support  |
+| Firefox | ❌ No support     | ✅ Full support  |
+
+## White-Label Configuration
+
+Donut is fully white-label enabled. Rebrand the entire application by setting environment variables:
+
+```env
+# Branding Variables
+APP_NAME="Your Brand Name"
+APP_DESCRIPTION="Your Tagline Here"
+APP_LOGO_EMOJI="🤖"
+BRAND_PRIMARY_COLOR="#3B82F6"
+BRAND_SECONDARY_COLOR="#F0F9FF"
+BUSINESS_NAME="Your Company Reception"
+```
+
+See [WHITE_LABEL_GUIDE.md](WHITE_LABEL_GUIDE.md) for complete customization options and examples for different industries.
+
+## AI Customization
+
+Customize Donut's personality and behavior through the Console Settings:
+
+- **Personality Tone**: Warm, Professional, Casual, Formal, Humorous, Empathetic
+- **Emotional Tone**: Neutral, Cheerful, Calm, Energetic
+- **Response Length**: Concise, Balanced, Detailed
+- **Formality Level**: 1-10 scale
+- **Voice Settings**: Choose TTS voice and adjust speed
+- **Model Parameters**: Temperature (0.1-1.0) and Max Tokens (256-4096)
+
+## Additional Documentation
+
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Detailed Railway and Vercel deployment instructions
+- **[CLIENT_DEPLOYMENT_GUIDE.md](CLIENT_DEPLOYMENT_GUIDE.md)** - Client handoff and usage guide
+- **[WHITE_LABEL_GUIDE.md](WHITE_LABEL_GUIDE.md)** - Complete white-label customization guide
+- **[BUILD_AND_TEST_REPORT.md](BUILD_AND_TEST_REPORT.md)** - Production readiness report
+- **[LUXURY_UI_ENHANCEMENTS.md](LUXURY_UI_ENHANCEMENTS.md)** - Documentation for premium UI/UX features including holographic effects, magnetic buttons, gradient mesh backgrounds, particle effects, and more
 
 ## Troubleshooting
 
@@ -308,11 +395,28 @@ docker compose up -d
 #### 7. Voice Recognition Not Working
 **Error:** `SpeechRecognition API not supported`
 **Solution:**
-- Use Chrome, Firefox, or Edge browser
-- Enable microphone permissions
+- Use Chrome or Edge browser (Firefox not supported)
+- Enable microphone permissions in browser settings
 - Ensure HTTPS in production (required for Web Speech API)
+- Check browser console for detailed error messages
+- Try the mic-test page at `/mic-test` for isolated testing
 
-#### 8. Build Errors
+#### 8. Microphone Permission Denied
+**Error:** `Permission denied` or `NotAllowedError`
+**Solution:**
+- Reset browser permissions: Go to browser settings → Site permissions → Microphone
+- Remove the site from blocked list and try again
+- Ensure no other application is using the microphone
+
+#### 9. TTS (Text-to-Speech) Not Working
+**Error:** No audio output from TTS
+**Solution:**
+- Check that `GROQ_API_KEY` is set correctly (Groq TTS requires API key)
+- Verify TTS provider priority in environment variables
+- Browser SpeechSynthesis is always available as final fallback
+- Use the TTS toggle button in the UI to enable/disable speech output
+
+#### 10. Build Errors
 **Error:** `TypeScript/ESLint errors`
 **Solution:**
 - Run `npm run lint` to check for issues

@@ -72,12 +72,23 @@ START_TIME = time.time()
 
 # Rate limiting
 rate_limit_store: dict[str, list[float]] = defaultdict(list)
-RATE_LIMIT_REQUESTS = 100  # requests per window
+RATE_LIMIT_REQUESTS = 200  # requests per window (increased for slider interactions)
 RATE_LIMIT_WINDOW = 60  # seconds
 
+# Endpoints exempt from rate limiting (low-risk operations)
+RATE_LIMIT_EXEMPT = {
+    "/api/ai-settings",
+    "/api/branding",
+    "/api/ai-settings/options",
+}
 
-def check_rate_limit(client_ip: str) -> bool:
+
+def check_rate_limit(client_ip: str, path: str) -> bool:
     """Check if client has exceeded rate limit."""
+    # Skip rate limiting for exempt endpoints
+    if path in RATE_LIMIT_EXEMPT:
+        return True
+    
     now = time.time()
     # Clean old entries
     rate_limit_store[client_ip] = [
@@ -183,13 +194,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def rate_limit_middleware(request: Request, call_next):
         """Apply rate limiting to API endpoints."""
         client_ip = request.client.host if request.client else "unknown"
+        path = request.url.path
         
-        # Skip rate limiting for health checks
-        if request.url.path in ["/", "/health"]:
+        # Skip rate limiting for health checks and exempt endpoints
+        if path in ["/", "/health"] or path in RATE_LIMIT_EXEMPT:
             return await call_next(request)
         
         # Check rate limit
-        if not check_rate_limit(client_ip):
+        if not check_rate_limit(client_ip, path):
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Please try again later."}

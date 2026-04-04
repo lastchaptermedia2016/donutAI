@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { GradientMeshBackground, ParticleBackground } from "@/components/ui";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,8 +26,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="dark">
-      <body className={`${inter.className} antialiased billionaire-bg text-billionaire-platinum`}>
-        <Providers>{children}</Providers>
+      <body className={`${inter.className} antialiased billionaire-bg text-billionaire-platinum relative overflow-x-hidden`}>
+        {/* Luxury Background Layers */}
+        <GradientMeshBackground />
+        <ParticleBackground particleCount={25} />
+        
+        {/* Main Content */}
+        <div className="relative z-10">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

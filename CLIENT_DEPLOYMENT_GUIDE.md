@@ -11,7 +11,31 @@ Decide on client's branding:
 - Secondary Color (e.g., "#EFF6FF")
 - Business Name (e.g., "Acme Corp Reception")
 
-### Step 2: Deploy Backend to Railway
+### Step 2: Configure AI Customization (Optional)
+Set default AI personality and voice settings for the client through the Console after deployment:
+- **Personality Tone**: Warm, Professional, Casual, Formal, Humorous, Empathetic
+- **Emotional Tone**: Neutral, Cheerful, Calm, Energetic
+- **Response Length**: Concise, Balanced, Detailed
+- **Formality Level**: 1-10 scale (1=Very Casual, 10=Very Formal)
+- **TTS Voice**: Autumn, Echo, Onyx, Nova
+- **Voice Speed**: 0.5x to 2.0x
+- **Model Temperature**: 0.1 (focused) to 1.0 (creative)
+- **Max Tokens**: 256 to 4096 (response length control)
+
+### Step 2.5: Luxury UI/UX Features (Included)
+The application includes premium UI enhancements that require no additional configuration:
+- **Holographic Effects**: Subtle iridescent sheen on stat cards and interactive elements
+- **Magnetic Buttons**: Buttons that subtly "pull" toward the cursor for a premium tactile feel
+- **Gradient Mesh Background**: Slow-shifting gradient mesh with deep blue and gold tones
+- **Particle Effects**: Subtle floating particles rising from the bottom of the screen
+- **Deep Blue Accents**: Rich navy and sapphire colors complementing the gold palette
+- **Multi-Layer Glassmorphism**: Enhanced depth with 24px blur and layered shadows
+- **Shimmer Loading**: Elegant loading placeholders with moving shimmer effect
+- **Gold Gradient Text**: Premium text styling for headings
+
+These effects are subtle and designed to enhance the user experience without being overwhelming.
+
+### Step 3: Deploy Backend to Railway
 1. Go to [Railway](https://railway.app)
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select your repository
@@ -40,7 +64,7 @@ ADMIN_PASSPHRASE=client_secure_passphrase
 6. Railway automatically deploys
 7. Copy the generated Railway URL (e.g., `https://acme-assistant-production.up.railway.app`)
 
-### Step 3: Deploy Frontend to Vercel
+### Step 4: Deploy Frontend to Vercel
 1. Go to [Vercel](https://vercel.com)
 2. Click "Add New Project" → Import your GitHub repository
 3. In "Root Directory" select `frontend`
@@ -49,12 +73,12 @@ ADMIN_PASSPHRASE=client_secure_passphrase
 5. Click "Deploy"
 6. Copy the Vercel URL (e.g., `https://acme-assistant.vercel.app`)
 
-### Step 4: Configure Custom Domain (Optional)
+### Step 5: Configure Custom Domain (Optional)
 1. In Vercel: Project → Settings → Domains → Add client's domain
 2. In Railway: Project → Settings → Domains → Add backend domain
 3. Update DNS records as instructed
 
-### Step 5: Enterprise Integration (Optional - Google Workspace / Microsoft 365)
+### Step 6: Enterprise Integration (Optional - Google Workspace / Microsoft 365)
 
 #### Google Workspace (Gmail + Calendar)
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
@@ -118,12 +142,13 @@ TWILIO_PHONE_NUMBER=+1234567890
 - Transcribes calls and stores in system
 - 24/7 availability
 
-### Step 6: Handoff to Client
+### Step 7: Handoff to Client
 Send client:
 - Frontend URL: `https://acme-assistant.vercel.app`
 - Admin passphrase (set in `ADMIN_PASSPHRASE`)
 - Brief usage instructions (see Part 2 below)
 - Enterprise integration status (if configured)
+- Link to this guide for reference
 
 ---
 
@@ -167,7 +192,18 @@ Send client:
 7. Tap to open and use
 
 ### Voice Commands
-The assistant responds to natural voice commands:
+
+#### Wake Word Activation (Hands-Free)
+The assistant can listen in the background for wake words. When enabled, simply say:
+- "Donut"
+- "Hey Donut"
+- "OK Donut"
+- "Hello Donut"
+
+The assistant will automatically activate and start listening for your command.
+
+#### Direct Voice Commands
+Click the microphone icon and speak naturally:
 - "Add a task to call John tomorrow"
 - "Write in my diary about today's meeting"
 - "What's on my calendar for this week?"
