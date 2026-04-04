@@ -124,7 +124,7 @@ export default function ConsolePage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto lg:ml-64">
           <header className="flex items-center justify-between px-4 py-3 border-b border-sophisticated-charcoal/30 bg-sophisticated-midnight/50 dark:bg-sophisticated-midnight/80">
             <div className="flex items-center gap-3">
               <button

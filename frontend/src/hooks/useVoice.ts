@@ -28,6 +28,7 @@ export function useVoice({
   const [error, setError] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const recognitionRef = useRef<any>(null);
+  const permissionRequestedRef = useRef(false);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -36,14 +37,13 @@ export function useVoice({
       (window as any).webkitSpeechRecognition
     );
 
-  // Check for browser compatibility and provide user feedback via state
+  // Check for browser compatibility
   useEffect(() => {
     if (!isSupported && typeof window !== "undefined") {
       const errorMessage = "Voice functionality is not supported in this browser. Please use Chrome, Edge, or Safari.";
       console.error(errorMessage);
       setError(errorMessage);
       
-      // Clear error after 8 seconds
       const timer = setTimeout(() => {
         setError(null);
       }, 8000);
@@ -52,22 +52,26 @@ export function useVoice({
     }
   }, [isSupported]);
 
-  // Check microphone permissions
+  // Check microphone permissions on mount
   useEffect(() => {
-    if (typeof window !== "undefined" && navigator.mediaDevices) {
-      navigator.permissions?.query({ name: 'microphone' as PermissionName })
+    if (typeof window !== "undefined" && navigator.permissions) {
+      navigator.permissions.query({ name: 'microphone' as PermissionName })
         .then((status) => {
+          console.log("Microphone permission status:", status.state);
           setPermissionStatus(status.state as 'granted' | 'denied' | 'prompt');
           status.addEventListener('change', () => {
+            console.log("Microphone permission changed to:", status.state);
             setPermissionStatus(status.state as 'granted' | 'denied' | 'prompt');
           });
         })
-        .catch(() => {
+        .catch((err) => {
+          console.warn("Could not check microphone permission:", err);
           setPermissionStatus('unknown');
         });
     }
   }, []);
 
+  // Initialize SpeechRecognition
   useEffect(() => {
     if (!isSupported) return;
 
@@ -81,12 +85,13 @@ export function useVoice({
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
+      console.log("Speech recognition started");
       setIsListening(true);
       setError(null);
     };
 
     recognition.onresult = (event: any) => {
-      let fullTranscript = transcript;
+      let fullTranscript = "";
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcriptPart = event.results[i][0].transcript;
@@ -109,31 +114,41 @@ export function useVoice({
       
       switch(event.error) {
         case 'not-allowed':
-          userMessage = "Microphone permission denied. Please allow microphone access in your browser settings.";
+          userMessage = "Microphone permission denied. Please allow microphone access in your browser settings, then refresh the page.";
           setPermissionStatus('denied');
           break;
         case 'no-speech':
-          userMessage = "No speech detected. Try speaking louder.";
+          userMessage = "No speech detected. Try speaking louder or check your microphone.";
           break;
         case 'audio-capture':
-          userMessage = "No microphone detected. Please check your audio device.";
+          userMessage = "No microphone detected. Please connect a microphone and try again.";
           break;
         case 'network':
           userMessage = "Network error. Check your internet connection.";
           break;
+        case 'aborted':
+          // User cancelled, don't show error
+          console.log("Speech recognition aborted by user");
+          return;
+        case 'service-not-allowed':
+          userMessage = "Speech recognition service not available. Try again later.";
+          break;
+        default:
+          userMessage = `Voice error: ${event.error}`;
       }
       
       setError(userMessage);
       onError?.(new Error(userMessage));
       setIsListening(false);
 
-      // Auto-clear non-critical errors after 4 seconds
+      // Auto-clear non-critical errors after 6 seconds
       if (event.error !== 'not-allowed') {
-        setTimeout(() => setError(null), 4000);
+        setTimeout(() => setError(null), 6000);
       }
     };
 
     recognition.onend = () => {
+      console.log("Speech recognition ended");
       setIsListening(false);
     };
 
@@ -148,52 +163,132 @@ export function useVoice({
         // Ignore abort errors
       }
     };
-  }, [onResult, onError, lang, isSupported, transcript]);
+  }, [onResult, onError, lang, isSupported]);
 
-  const startListening = useCallback(() => {
+  // Function to explicitly request microphone permission
+  const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("getUserMedia not supported");
+      return false;
+    }
+
+    try {
+      console.log("Requesting microphone access...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Immediately stop all tracks - we just needed permission
+      stream.getTracks().forEach(track => {
+        console.log("Stopping microphone track:", track.kind);
+        track.stop();
+      });
+      
+      setPermissionStatus('granted');
+      permissionRequestedRef.current = true;
+      console.log("Microphone permission granted!");
+      return true;
+    } catch (err: any) {
+      console.error("Microphone permission denied:", err.name, err.message);
+      
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setPermissionStatus('denied');
+        setError("Microphone permission was denied. Please enable it in your browser settings and refresh the page.");
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setError("No microphone found. Please connect a microphone and try again.");
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setError("Microphone is in use by another application. Please close other apps using the microphone.");
+      } else {
+        setError(`Microphone error: ${err.message}`);
+      }
+      
+      permissionRequestedRef.current = true;
+      return false;
+    }
+  }, []);
+
+  const startListening = useCallback(async () => {
+    console.log("startListening called");
+    console.log("  isListening:", isListening);
+    console.log("  permissionStatus:", permissionStatus);
+    console.log("  isSupported:", isSupported);
+    console.log("  recognitionRef.current:", !!recognitionRef.current);
+
+    if (!isSupported) {
+      setError("Voice recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      return;
+    }
+
     if (!recognitionRef.current) {
-      setError("Voice recognition not available");
+      setError("Voice recognition not available. Please try refreshing the page.");
       return;
     }
 
     if (permissionStatus === 'denied') {
-      setError("Microphone permission blocked. Please enable it in your browser settings.");
+      setError("Microphone permission was denied. Please enable it in your browser settings and refresh the page.");
       return;
     }
 
+    // If permission hasn't been requested yet or is unknown/prompt, request it first
+    if (!permissionRequestedRef.current || permissionStatus === 'prompt' || permissionStatus === 'unknown') {
+      console.log("Requesting microphone permission first...");
+      const granted = await requestMicrophoneAccess();
+      if (!granted) {
+        return;
+      }
+    }
+
+    // Clear any existing error
     setTranscript("");
     setError(null);
     
     try {
       if (isListening) {
+        console.log("Already listening, stopping first...");
         recognitionRef.current.stop();
-        setTimeout(() => recognitionRef.current.start(), 100);
+        // Wait a bit before restarting
+        setTimeout(() => {
+          try {
+            console.log("Restarting speech recognition...");
+            recognitionRef.current.start();
+          } catch (e) {
+            console.error("Failed to restart recognition:", e);
+            setError("Failed to restart microphone. Please try again.");
+          }
+        }, 200);
       } else {
+        console.log("Starting speech recognition...");
         recognitionRef.current.start();
       }
     } catch (e: any) {
+      console.error("Error starting recognition:", e);
+      
       if (e.name === 'InvalidStateError') {
-        // Already running, restart after short delay
+        console.log("InvalidStateError - recognition already running, restarting...");
+        try {
+          recognitionRef.current.stop();
+        } catch {}
         setTimeout(() => {
           try {
             recognitionRef.current.start();
-          } catch {}
-        }, 200);
+          } catch (e2) {
+            console.error("Failed to start after stop:", e2);
+            setError("Failed to start microphone. Please try again.");
+          }
+        }, 300);
       } else {
-        console.error("Failed to start recognition:", e);
         setError("Failed to activate microphone. Please try again.");
       }
     }
-  }, [isListening, permissionStatus]);
+  }, [isListening, permissionStatus, isSupported, requestMicrophoneAccess]);
 
   const stopListening = useCallback(() => {
     if (!recognitionRef.current) return;
     
     try {
+      console.log("Stopping speech recognition...");
       recognitionRef.current.stop();
       setIsListening(false);
     } catch (e) {
-      // Already stopped, ignore
+      console.log("Already stopped or error:", e);
     }
   }, []);
 

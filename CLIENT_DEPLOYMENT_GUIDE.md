@@ -181,7 +181,11 @@ The assistant responds to natural voice commands:
 - **Memory**: Store and recall information
 - **Search**: Web search via DuckDuckGo
 - **Calendar**: View and manage events
-- **Email**: Send and read emails (with Gmail integration)
+- **Email**: Send and read emails (with Gmail/Outlook integration)
+- **Phone**: AI receptionist via Twilio (optional)
+- **Slack/Teams**: Chat integration (optional)
+- **Multi-language**: Support for multiple languages (optional)
+- **Analytics**: Usage metrics and insights (optional)
 - **Console**: Admin dashboard for monitoring
 
 ---

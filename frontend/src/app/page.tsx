@@ -21,6 +21,8 @@ import {
   CheckSquare,
   Brain,
   BarChart3,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 interface Message {
@@ -36,16 +38,56 @@ export default function HomePage() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+  const [isVoiceSupported, setIsVoiceSupported] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const config = contextConfig[contextMode];
-  const { isListening, startListening, stopListening, isSupported, error: voiceError } = useVoice({
+  const { isListening, startListening, stopListening, isSupported, error: voiceError, permissionStatus } = useVoice({
     onResult: (text) => {
       setInputText(text);
       handleSend(text);
     },
   });
+
+  // Sync isSupported with state to avoid hydration mismatch
+  useEffect(() => {
+    setIsVoiceSupported(isSupported);
+  }, [isSupported]);
+
+  // Initialize Text-to-Speech
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      synthRef.current = window.speechSynthesis;
+    }
+  }, []);
+
+  // Function to speak text using browser SpeechSynthesis
+  const speakText = useCallback((text: string) => {
+    if (!isTTSEnabled || !synthRef.current) return;
+    
+    // Cancel any ongoing speech
+    synthRef.current.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Try to use a natural English voice
+    const voices = synthRef.current.getVoices();
+    const englishVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && voice.name.includes('Google')
+    ) || voices.find(voice => voice.lang.startsWith('en'));
+    
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    
+    synthRef.current.speak(utterance);
+  }, [isTTSEnabled]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -84,11 +126,13 @@ export default function HomePage() {
               ]);
               setIsLoading(false);
 
-              // Speak response
-              // Speak response from server audio stream
+              // Speak response - try server audio first, fallback to TTS
               if (data.audio) {
                 const audio = new Audio(`data:audio/wav;base64,${data.audio}`);
                 audio.play().catch(e => console.log("Audio play failed:", e));
+              } else if (data.content) {
+                // Fallback to client-side TTS if no server audio
+                speakText(data.content);
               }
             } else if (data.type === "status") {
               // Show status in UI
@@ -175,10 +219,13 @@ export default function HomePage() {
             },
           ]);
 
-          // Speak response from server audio stream
+          // Speak response - try server audio first, fallback to TTS
           if (data.audio) {
             const audio = new Audio(`data:audio/wav;base64,${data.audio}`);
             audio.play().catch(e => console.log("Audio play failed:", e));
+          } else if (data.response) {
+            // Fallback to client-side TTS if no server audio
+            speakText(data.response);
           }
         } catch (error) {
           console.error("Error sending message:", error);
@@ -319,16 +366,29 @@ export default function HomePage() {
                 </span>
               </div>
             </div>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
-            >
-              {isDarkMode ? (
-                <Sun className="w-5 h-5 text-billionaire-gold-400" />
-              ) : (
-                <Moon className="w-5 h-5 text-billionaire-platinum/70" />
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsTTSEnabled(!isTTSEnabled)}
+                className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
+                title={isTTSEnabled ? "Disable TTS" : "Enable TTS"}
+              >
+                {isTTSEnabled ? (
+                  <Volume2 className="w-5 h-5 text-billionaire-gold-400" />
+                ) : (
+                  <VolumeX className="w-5 h-5 text-billionaire-platinum/70" />
+                )}
+              </button>
+              <button
+                onClick={toggleDarkMode}
+                className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
+              >
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5 text-billionaire-gold-400" />
+                ) : (
+                  <Moon className="w-5 h-5 text-billionaire-platinum/70" />
+                )}
+              </button>
+            </div>
           </header>
 
           {/* Messages */}
@@ -409,10 +469,10 @@ export default function HomePage() {
             <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
               <button
                 onClick={isListening ? stopListening : startListening}
-                disabled={!isSupported}
+                disabled={!isVoiceSupported}
                 className={`
                   ${isListening ? 'voice-button-listening' : 'voice-button-idle'}
-                  ${!isSupported ? "opacity-50 cursor-not-allowed" : ""}
+                  ${!isVoiceSupported ? "opacity-50 cursor-not-allowed" : ""}
                 `}
                 title={isListening ? "Tap to stop" : "Tap to speak"}
               >
@@ -450,6 +510,12 @@ export default function HomePage() {
             {voiceError && (
               <p className="text-center text-xs text-billionaire-platinum/80 bg-billionaire-burgundy/10 px-4 py-2 rounded-xl max-w-4xl mx-auto border border-billionaire-burgundy/30">
                 ⚠️ {voiceError}
+              </p>
+            )}
+            
+            {permissionStatus === 'prompt' && (
+              <p className="text-center text-xs text-billionaire-gold-400/80 bg-billionaire-gold-500/5 px-4 py-2 rounded-xl max-w-4xl mx-auto border border-billionaire-gold-500/20">
+                ℹ️ Microphone permission needed. Click the mic button and allow access when prompted.
               </p>
             )}
           </div>
