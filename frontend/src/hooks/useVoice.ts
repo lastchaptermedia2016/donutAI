@@ -92,18 +92,23 @@ export function useVoice({
 
     recognition.onresult = (event: any) => {
       let fullTranscript = "";
+      let hasFinal = false;
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcriptPart = event.results[i][0].transcript;
-        fullTranscript = event.results[i].isFinal 
-          ? transcriptPart.trim() 
-          : transcriptPart;
+        if (event.results[i].isFinal) {
+          fullTranscript = transcriptPart.trim();
+          hasFinal = true;
+        } else {
+          fullTranscript = transcriptPart;
+        }
       }
       
       setTranscript(fullTranscript);
 
-      if (event.results[event.resultIndex]?.isFinal) {
-        onResult?.(fullTranscript.trim());
+      if (hasFinal) {
+        console.log("Final transcript received:", fullTranscript);
+        onResult?.(fullTranscript);
       }
     };
 
@@ -150,6 +155,8 @@ export function useVoice({
     recognition.onend = () => {
       console.log("Speech recognition ended");
       setIsListening(false);
+      // Note: Don't auto-restart here - let the user explicitly start listening again
+      // This prevents loops when switching between wake word and speech recognition
     };
 
     recognitionRef.current = recognition;
