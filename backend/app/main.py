@@ -174,9 +174,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # CORS middleware
     settings = settings or get_settings()
+    # Build a comprehensive list of allowed origins
+    allowed_origins = list({
+        settings.frontend_url,
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://donut-ai-eosin.vercel.app",
+        "*.vercel.app",
+    })
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_url, "http://localhost:3000", "http://localhost:3001", "https://vercel.com/lastchaptermedia2016-5232s-projects/donut-ai/EaY5wFYgs4rxib4Y4NPqa3ENoTVe"],
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
