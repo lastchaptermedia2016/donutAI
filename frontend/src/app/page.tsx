@@ -107,7 +107,7 @@ export default function HomePage() {
     }
   }, []);
 
-  // Function to speak text using browser SpeechSynthesis
+  // Function to speak text using browser SpeechSynthesis with optimized settings
   const speakText = useCallback((text: string) => {
     if (!isTTSEnabled || !synthRef.current) return;
     
@@ -115,18 +115,25 @@ export default function HomePage() {
     synthRef.current.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = 1;
     
-    // Try to use a natural English voice
+    // Optimized for natural, conversational delivery
+    utterance.rate = 0.95;    // Slightly slower for clarity
+    utterance.pitch = 1.05;   // Slightly higher for warmth
+    utterance.volume = 0.95;  // Near max but not clipping
+    
+    // Try to use the most natural-sounding voice available
     const voices = synthRef.current.getVoices();
-    const englishVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && voice.name.includes('Google')
-    ) || voices.find(voice => voice.lang.startsWith('en'));
     
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+    // Priority order for natural voices
+    const preferredVoice = 
+      voices.find(v => v.name.includes("Google US English")) ||    // Best quality
+      voices.find(v => v.name.includes("Samantha")) ||             // iOS natural voice
+      voices.find(v => v.name.includes("Alex")) ||                 // macOS voice
+      voices.find(v => v.name.includes("Google") && v.lang.startsWith('en')) || // Any Google English
+      voices.find(v => v.lang === "en-US") ||                      // Any US English
+      voices.find(v => v.lang.startsWith('en'));                   // Any English
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
     }
     
     synthRef.current.speak(utterance);

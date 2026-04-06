@@ -182,17 +182,26 @@ class TTSService:
     async def _groq_speak(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Optional[bytes]:
-        """Synthesize using Groq API."""
+        """Synthesize using Groq API.
+        
+        Available voices: autumn, echo, onyx, nova
+        - autumn: Warm, friendly female voice (best for conversational)
+        - echo: Clear, professional male voice
+        - onyx: Deep, authoritative male voice
+        - nova: Bright, energetic female voice
+        """
         if isinstance(self._engine, type(None)):
             return None
 
         try:
+            # Use "echo" voice for more natural, conversational tone
+            # Slightly slower speed (0.9) for more natural delivery
             response = await self._engine.audio.speech.create(
                 model="canopylabs/orpheus-v1-english",
                 input=text[:4096],
-                voice=voice or "autumn",
+                voice=voice or "echo",
                 response_format="wav",
-                speed=speed,
+                speed=speed * 0.9,  # Slightly slower for natural feel
             )
             return response.read()
         except Exception as e:
