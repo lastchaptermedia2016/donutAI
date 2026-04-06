@@ -102,10 +102,14 @@ export default function HomePage() {
 
   // Toggle wake word detection
   const toggleWakeWord = useCallback(() => {
+    console.log("toggleWakeWord called, isWakeWordEnabled:", isWakeWordEnabled);
+    console.log("  isWakeWordSupported:", isWakeWordSupported);
     if (isWakeWordEnabled) {
+      console.log("  Stopping wake word detection...");
       stopWakeWordDetection();
       setIsWakeWordEnabled(false);
     } else {
+      console.log("  Starting wake word detection...");
       startWakeWordDetection();
       setIsWakeWordEnabled(true);
     }
