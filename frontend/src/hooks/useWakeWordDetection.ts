@@ -72,7 +72,11 @@ export function useWakeWordDetection({
     }
   }, []);
 
-  // Initialize SpeechRecognition for wake word detection
+  // Store callback in ref to avoid dependency issues
+  const onWakeWordDetectedRef = useRef(onWakeWordDetected);
+  onWakeWordDetectedRef.current = onWakeWordDetected;
+
+  // Initialize SpeechRecognition for wake word detection (only once)
   useEffect(() => {
     if (!isSupported) return;
 
@@ -116,7 +120,7 @@ export function useWakeWordDetection({
         
         if (detected) {
           console.log(`Wake word "${wakeWord}" detected!`);
-          onWakeWordDetected?.();
+          onWakeWordDetectedRef.current?.();
           
           // Stop standby mode after detection
           stopStandby();
@@ -165,12 +169,17 @@ export function useWakeWordDetection({
       setIsListening(false);
       
       // Auto-restart if we're still in standby mode
+      // Use a small delay to avoid rapid restart loops
       if (isStandby && recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {
-          console.log("Failed to restart wake word detection:", e);
-        }
+        setTimeout(() => {
+          if (isStandby && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              console.log("Failed to restart wake word detection:", e);
+            }
+          }
+        }, 500);
       }
     };
 
@@ -185,7 +194,7 @@ export function useWakeWordDetection({
         // Ignore abort errors
       }
     };
-  }, [onWakeWordDetected, wakeWord, isStandby, isSupported]);
+  }, [isSupported, wakeWord]); // Removed isStandby from dependencies to prevent re-initialization
 
   // Function to explicitly request microphone permission
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
