@@ -63,7 +63,7 @@ A multi-modal agentic voice assistant that acts as your Executive Function Co-Pi
 | **LLM** | Groq (Llama 3.3 70B + Llama 3.1 8B) | Free tier |
 | **Database** | Supabase Postgres + pgvector | 500MB free |
 | **Auth** | Supabase Auth | Free tier |
-| **STT** | Groq Whisper → Browser | Free tier |
+| **STT** | Browser Web Speech API → Groq Whisper | Free tier |
 | **TTS** | ElevenLabs (briefings) → Browser | 10k chars/month |
 | **Search** | xAI Grok | $25-175 credits |
 | **Frontend** | Next.js 14, React 18, Tailwind CSS | Free |
@@ -310,8 +310,9 @@ Donut includes a robust multi-provider voice system with automatic fallback:
 - **Customization**: Choose voices (Autumn, Echo, Onyx, Nova) and adjust speed (0.5x - 2.0x)
 
 ### Speech-to-Text (STT)
-- **Primary**: Groq Whisper using `whisper-large-v3` model
-- **Fallback**: Browser Web Speech API
+- **Primary**: Browser Web Speech API (Google Speech Recognition)
+- **Fallback**: Groq Whisper using `whisper-large-v3` model (when API key is configured)
+- **Note**: Requires Chrome, Edge, or Safari for best results. Firefox is not supported.
 
 ### Browser Compatibility
 
