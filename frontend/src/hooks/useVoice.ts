@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UseVoiceOptions {
   onResult?: (text: string) => void;
@@ -28,7 +28,13 @@ export function useVoice({
   const [error, setError] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const recognitionRef = useRef<any>(null);
-  const permissionRequestedRef = useRef(false);
+  const finalTranscriptRef = useRef("");
+  const onResultRef = useRef(onResult);
+  const onErrorRef = useRef(onError);
+
+  // Update refs to avoid stale closures
+  onResultRef.current = onResult;
+  onErrorRef.current = onError;
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -71,7 +77,7 @@ export function useVoice({
     }
   }, []);
 
-  // Initialize SpeechRecognition
+  // Initialize SpeechRecognition - only once with empty dependency array
   useEffect(() => {
     if (!isSupported) return;
 
@@ -91,24 +97,25 @@ export function useVoice({
     };
 
     recognition.onresult = (event: any) => {
-      let fullTranscript = "";
-      let hasFinal = false;
-      
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcriptPart = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          fullTranscript = transcriptPart.trim();
-          hasFinal = true;
+      let interim = "";
+      let final = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          final += result[0].transcript;
         } else {
-          fullTranscript = transcriptPart;
+          interim += result[0].transcript;
         }
       }
-      
-      setTranscript(fullTranscript);
 
-      if (hasFinal) {
-        console.log("Final transcript received:", fullTranscript);
-        onResult?.(fullTranscript);
+      if (final) {
+        finalTranscriptRef.current = final;
+        setTranscript(final);
+        console.log("Final transcript received:", final);
+        onResultRef.current?.(final);
+      } else if (interim) {
+        setTranscript(interim);
       }
     };
 
@@ -132,7 +139,6 @@ export function useVoice({
           userMessage = "Network error. Check your internet connection.";
           break;
         case 'aborted':
-          // User cancelled, don't show error
           console.log("Speech recognition aborted by user");
           return;
         case 'service-not-allowed':
@@ -143,7 +149,7 @@ export function useVoice({
       }
       
       setError(userMessage);
-      onError?.(new Error(userMessage));
+      onErrorRef.current?.(new Error(userMessage));
       setIsListening(false);
 
       // Auto-clear non-critical errors after 6 seconds
@@ -153,10 +159,8 @@ export function useVoice({
     };
 
     recognition.onend = () => {
-      console.log("Speech recognition ended - isListening was:", isListening);
+      console.log("Speech recognition ended");
       setIsListening(false);
-      // Note: Don't auto-restart here - let the user explicitly start listening again
-      // This prevents loops when switching between wake word and speech recognition
     };
 
     recognitionRef.current = recognition;
@@ -170,7 +174,7 @@ export function useVoice({
         // Ignore abort errors
       }
     };
-  }, [onResult, onError, lang, isSupported]);
+  }, [isSupported]); // Only depend on isSupported, not callbacks or lang
 
   // Function to explicitly request microphone permission
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
@@ -190,7 +194,6 @@ export function useVoice({
       });
       
       setPermissionStatus('granted');
-      permissionRequestedRef.current = true;
       console.log("Microphone permission granted!");
       return true;
     } catch (err: any) {
@@ -207,7 +210,6 @@ export function useVoice({
         setError(`Microphone error: ${err.message}`);
       }
       
-      permissionRequestedRef.current = true;
       return false;
     }
   }, []);
@@ -234,8 +236,8 @@ export function useVoice({
       return;
     }
 
-    // If permission hasn't been requested yet or is unknown/prompt, request it first
-    if (!permissionRequestedRef.current || permissionStatus === 'prompt' || permissionStatus === 'unknown') {
+    // If permission hasn't been granted yet, request it first
+    if (permissionStatus === 'prompt' || permissionStatus === 'unknown') {
       console.log("Requesting microphone permission first...");
       const granted = await requestMicrophoneAccess();
       if (!granted) {
@@ -243,28 +245,20 @@ export function useVoice({
       }
     }
 
-    // Clear any existing error
+    // Don't start if already listening
+    if (isListening) {
+      console.log("Already listening, ignoring start request");
+      return;
+    }
+
+    // Clear any existing error and transcript
     setTranscript("");
+    finalTranscriptRef.current = "";
     setError(null);
     
     try {
-      if (isListening) {
-        console.log("Already listening, stopping first...");
-        recognitionRef.current.stop();
-        // Wait a bit before restarting
-        setTimeout(() => {
-          try {
-            console.log("Restarting speech recognition...");
-            recognitionRef.current.start();
-          } catch (e) {
-            console.error("Failed to restart recognition:", e);
-            setError("Failed to restart microphone. Please try again.");
-          }
-        }, 200);
-      } else {
-        console.log("Starting speech recognition...");
-        recognitionRef.current.start();
-      }
+      console.log("Starting speech recognition...");
+      recognitionRef.current.start();
     } catch (e: any) {
       console.error("Error starting recognition:", e);
       
@@ -293,7 +287,6 @@ export function useVoice({
     try {
       console.log("Stopping speech recognition...");
       recognitionRef.current.stop();
-      setIsListening(false);
     } catch (e) {
       console.log("Already stopped or error:", e);
     }
