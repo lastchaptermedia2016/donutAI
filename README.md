@@ -263,30 +263,36 @@ Use the sidebar to switch between:
 
 ## Deployment
 
-### Vercel (Frontend) + Railway (Backend)
+### Production Deployment (Vercel + Railway)
 
-1. Push to GitHub
-2. Connect backend repo to Railway
-3. Connect frontend repo to Vercel
-4. Set environment variables
-5. Deploy!
+**Backend (Railway):**
+1. Push your code to GitHub
+2. Connect your repository to Railway
+3. Railway will automatically use `backend/Dockerfile` and start with uvicorn
+4. Set environment variables in Railway dashboard:
+   - `GROQ_API_KEY` (required)
+   - `SUPABASE_URL` and `SUPABASE_KEY` (for database)
+   - `FRONTEND_URL=https://your-domain.vercel.app`
+
+**Frontend (Vercel):**
+1. Connect your GitHub repository to Vercel
+2. Set build settings:
+   - Framework: Next.js
+   - Root Directory: `frontend`
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
+3. Set environment variable:
+   - `NEXT_PUBLIC_BACKEND_URL=https://your-backend.railway.app`
+
+**Important:** The frontend proxies API requests to the backend via `next.config.js`. In production, set `NEXT_PUBLIC_BACKEND_URL` in Vercel to your Railway backend URL.
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) and [DEPLOYMENT_FIX_SUMMARY.md](DEPLOYMENT_FIX_SUMMARY.md) for detailed instructions and recent fixes.
 
 ### Docker
 
 ```bash
 docker compose up -d
 ```
-
-### Railway Deployment (Recommended for Production)
-
-For production deployment, use Railway with the included `railway.json` configuration:
-
-1. Push your code to GitHub
-2. Connect your repository to Railway
-3. Railway will automatically use `backend/Dockerfile` and start with uvicorn
-4. Configure environment variables in Railway dashboard
-
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 ## Voice Services
 
@@ -346,6 +352,7 @@ Customize Donut's personality and behavior through the Console Settings:
 ## Additional Documentation
 
 - **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Detailed Railway and Vercel deployment instructions
+- **[DEPLOYMENT_FIX_SUMMARY.md](DEPLOYMENT_FIX_SUMMARY.md)** - Recent fixes for Railway backend and Vercel frontend deployment (including Sentry removal)
 - **[CLIENT_DEPLOYMENT_GUIDE.md](CLIENT_DEPLOYMENT_GUIDE.md)** - Client handoff and usage guide
 - **[WHITE_LABEL_GUIDE.md](WHITE_LABEL_GUIDE.md)** - Complete white-label customization guide
 - **[BUILD_AND_TEST_REPORT.md](BUILD_AND_TEST_REPORT.md)** - Production readiness report
