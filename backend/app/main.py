@@ -176,7 +176,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_url, "http://localhost:3000", "http://localhost:3001"],
+        allow_origins=[settings.frontend_url, "http://localhost:3000", "http://localhost:3001", "https://vercel.com/lastchaptermedia2016-5232s-projects/donut-ai/EaY5wFYgs4rxib4Y4NPqa3ENoTVe"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -186,7 +186,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["localhost", "127.0.0.1", settings.frontend_url.replace("http://", "").replace("https://", "")]
+        allowed_hosts=["localhost", "127.0.0.1", "donutai-production.up.railway.app", "*.railway.app", "donut-ai-eosin.vercel.app", "*.vercel.app", settings.frontend_url.replace("http://", "").replace("https://", "")]
     )
 
     # Rate limiting middleware
@@ -1288,7 +1288,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 # Create default app instance
 app = create_app()
-
 
 if __name__ == "__main__":
     import uvicorn
