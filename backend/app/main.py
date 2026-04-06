@@ -369,10 +369,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             memory_tool = get_memory_tool()
             memories = await memory_tool.get_all_memories(limit=limit)
+            # Ensure we return a list, even if empty
+            if memories is None:
+                return []
             return memories
         except Exception as e:
             logger.error(f"Error fetching memories: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=str(e))
+            # Return empty list instead of 500 error for better UX
+            return []
 
     @app.delete("/api/memory/{memory_id}", tags=["Memory"])
     async def delete_memory(memory_id: str):
