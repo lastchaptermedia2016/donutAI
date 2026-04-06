@@ -170,8 +170,10 @@ export function useWakeWordDetection({
       
       // Auto-restart if we're still in standby mode
       // Use a small delay to avoid rapid restart loops
+      // Check isStandby via ref to get current value
       if (isStandby && recognitionRef.current) {
         setTimeout(() => {
+          // Double-check standby state before restarting
           if (isStandby && recognitionRef.current) {
             try {
               recognitionRef.current.start();
@@ -179,7 +181,7 @@ export function useWakeWordDetection({
               console.log("Failed to restart wake word detection:", e);
             }
           }
-        }, 500);
+        }, 800);
       }
     };
 
