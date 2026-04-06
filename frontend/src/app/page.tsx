@@ -69,11 +69,12 @@ export default function HomePage() {
       utterance.volume = 0.8;
       synthRef.current.speak(utterance);
     }
-    // Small delay to ensure wake word detection is fully stopped before starting speech recognition
+    // Longer delay to ensure wake word detection is fully stopped before starting speech recognition
+    // This prevents conflicts between the two SpeechRecognition instances
     setTimeout(() => {
       console.log("Starting speech recognition after wake word...");
       startListening();
-    }, 300);
+    }, 1000);
   }, [startListening, isTTSEnabled]);
 
   const { 

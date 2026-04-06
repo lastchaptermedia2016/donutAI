@@ -153,7 +153,7 @@ export function useVoice({
     };
 
     recognition.onend = () => {
-      console.log("Speech recognition ended");
+      console.log("Speech recognition ended - isListening was:", isListening);
       setIsListening(false);
       // Note: Don't auto-restart here - let the user explicitly start listening again
       // This prevents loops when switching between wake word and speech recognition
