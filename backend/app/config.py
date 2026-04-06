@@ -1,5 +1,6 @@
 """Donut backend configuration management."""
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -37,7 +38,9 @@ class Settings(BaseSettings):
 
     # Server Settings
     backend_host: str = Field(default="0.0.0.0")
-    backend_port: int = Field(default=8000)
+    backend_port: int = Field(
+        default_factory=lambda: int(os.getenv("PORT", os.getenv("BACKEND_PORT", 8000)))
+    )
     frontend_url: str = Field(default="http://localhost:3000")
 
     # Optional: OpenAI (for Whisper fallback)
