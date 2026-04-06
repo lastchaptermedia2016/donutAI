@@ -58,6 +58,24 @@ export default function HomePage() {
     },
   });
 
+  // Store the wake word detected callback in a ref to avoid circular dependency
+  const onWakeWordDetectedRef = useRef<(() => void) | null>(null);
+
+  const { 
+    isStandby: isWakeWordStandby, 
+    startStandby: startWakeWordDetection, 
+    stopStandby: stopWakeWordDetection,
+    isSupported: isWakeWordSupported,
+    error: wakeWordError,
+  } = useWakeWordDetection({
+    onWakeWordDetected: () => onWakeWordDetectedRef.current?.(),
+    wakeWord: "donut",
+  });
+
+  // Store stopWakeWordDetection in a ref to access it in callbacks
+  const stopWakeWordDetectionRef = useRef<(() => void) | null>(null);
+  stopWakeWordDetectionRef.current = stopWakeWordDetection;
+
   // Wake word detection - when "Donut" is detected, auto-activate voice
   const handleWakeWordDetected = useCallback(() => {
     console.log("Wake word detected! Activating voice input...");
@@ -69,6 +87,8 @@ export default function HomePage() {
       utterance.volume = 0.8;
       synthRef.current.speak(utterance);
     }
+    // Stop wake word detection immediately
+    stopWakeWordDetectionRef.current?.();
     // Longer delay to ensure wake word detection is fully stopped before starting speech recognition
     // This prevents conflicts between the two SpeechRecognition instances
     setTimeout(() => {
@@ -77,16 +97,8 @@ export default function HomePage() {
     }, 1000);
   }, [startListening, isTTSEnabled]);
 
-  const { 
-    isStandby: isWakeWordStandby, 
-    startStandby: startWakeWordDetection, 
-    stopStandby: stopWakeWordDetection,
-    isSupported: isWakeWordSupported,
-    error: wakeWordError,
-  } = useWakeWordDetection({
-    onWakeWordDetected: handleWakeWordDetected,
-    wakeWord: "donut",
-  });
+  // Update the ref with the latest callback
+  onWakeWordDetectedRef.current = handleWakeWordDetected;
 
   // Toggle wake word detection
   const toggleWakeWord = useCallback(() => {
