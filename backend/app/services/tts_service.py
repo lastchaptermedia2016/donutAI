@@ -194,12 +194,12 @@ class TTSService:
             return None
 
         try:
-            # Use "echo" voice for more natural, conversational tone
+            # Use "autumn" voice - warm, friendly female voice (best for conversational)
             # Slightly slower speed (0.9) for more natural delivery
             response = await self._engine.audio.speech.create(
                 model="canopylabs/orpheus-v1-english",
                 input=text[:4096],
-                voice=voice or "echo",
+                voice=voice or "autumn",
                 response_format="wav",
                 speed=speed * 0.9,  # Slightly slower for natural feel
             )

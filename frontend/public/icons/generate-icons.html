@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Donut Icon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .icon-item { text-align: center; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Donut App Icon Generator</h1>
+    <p>Click the buttons below to download icons in different sizes:</p>
+    <div>
+        <button onclick="downloadIcon(192)">Download 192x192</button>
+        <button onclick="downloadIcon(512)">Download 512x512</button>
+        <button onclick="downloadIcon(72)">Download 72x72</button>
+        <button onclick="downloadIcon(96)">Download 96x96</button>
+        <button onclick="downloadIcon(128)">Download 128x128</button>
+        <button onclick="downloadIcon(144)">Download 144x144</button>
+        <button onclick="downloadIcon(152)">Download 152x152</button>
+        <button onclick="downloadIcon(167)">Download 167x167</button>
+        <button onclick="downloadIcon(180)">Download 180x180</button>
+        <button onclick="downloadIcon(1024)">Download 1024x1024</button>
+    </div>
+    <div class="icon-container" id="icons"></div>
+
+    <script>
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background - donut gold color
+            const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+            gradient.addColorStop(0, '#FFD700');
+            gradient.addColorStop(1, '#FFBF00');
+            ctx.fillStyle = gradient;
+            
+            // Rounded rectangle background
+            const radius = size * 0.166; // ~32/192 ratio
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add subtle shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.shadowBlur = size * 0.05;
+            ctx.shadowOffsetX = size * 0.02;
+            ctx.shadowOffsetY = size * 0.02;
+            
+            // Draw donut emoji
+            ctx.shadowColor = 'transparent';
+            ctx.font = `${size * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍩', size / 2, size / 2);
+            
+            return canvas;
+        }
+        
+        function downloadIcon(size) {
+            const canvas = generateIcon(size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Display preview icons
+        const sizes = [72, 96, 128, 144, 152, 167, 180, 192, 512];
+        const container = document.getElementById('icons');
+        sizes.forEach(size => {
+            const item = document.createElement('div');
+            item.className = 'icon-item';
+            const canvas = generateIcon(size);
+            canvas.style.width = Math.min(size, 100) + 'px';
+            canvas.style.height = Math.min(size, 100) + 'px';
+            item.appendChild(canvas);
+            const label = document.createElement('div');
+            label.textContent = size + 'x' + size;
+            item.appendChild(label);
+            container.appendChild(item);
+        });
+    </script>
+</body>
+</html>

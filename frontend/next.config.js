@@ -1,4 +1,51 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+  buildExcludes: ['app-build-manifest.json'],
+  runtimeCaching: [
+    {
+      urlPattern: /^https?:\/\/.*\.json$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'json-cache',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+        },
+      },
+    },
+    {
+      urlPattern: /^https?:\/\/.*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-assets',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /^https?:\/\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24, // 1 day
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+  ],
+});
+
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
@@ -25,6 +72,9 @@ const nextConfig = {
   },
   // ESLint and TypeScript errors are enforced during builds
   // This ensures code quality and prevents broken code from reaching production
+  images: {
+    domains: ['localhost'],
+  },
 };
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);

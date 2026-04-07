@@ -260,18 +260,20 @@ export function useWakeWordDetection({
       return;
     }
 
-    // If permission hasn't been requested yet or is unknown/prompt, request it first
-    if (!permissionRequestedRef.current || permissionStatus === 'prompt' || permissionStatus === 'unknown') {
-      console.log("Requesting microphone permission first...");
-      const granted = await requestMicrophoneAccess();
-      if (!granted) {
-        return;
-      }
-    }
-
     // Clear any existing error
     setError(null);
     setIsStandby(true);
+    
+    // Request microphone permission first if needed (non-blocking)
+    if (!permissionRequestedRef.current || permissionStatus === 'prompt' || permissionStatus === 'unknown') {
+      console.log("Requesting microphone permission...");
+      requestMicrophoneAccess().then(granted => {
+        if (!granted) {
+          setIsStandby(false);
+          setError("Microphone permission is required for wake word detection.");
+        }
+      });
+    }
     
     try {
       if (isListening) {
@@ -285,6 +287,7 @@ export function useWakeWordDetection({
           } catch (e) {
             console.error("Failed to restart recognition:", e);
             setError("Failed to start wake word detection. Please try again.");
+            setIsStandby(false);
           }
         }, 200);
       } else {
@@ -305,10 +308,12 @@ export function useWakeWordDetection({
           } catch (e2) {
             console.error("Failed to start after stop:", e2);
             setError("Failed to start wake word detection. Please try again.");
+            setIsStandby(false);
           }
         }, 300);
       } else {
         setError("Failed to activate wake word detection. Please try again.");
+        setIsStandby(false);
       }
     }
   }, [isStandby, isListening, permissionStatus, isSupported, requestMicrophoneAccess]);

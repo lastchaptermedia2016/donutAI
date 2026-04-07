@@ -42,7 +42,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
-  const [isVoiceSupported, setIsVoiceSupported] = useState(true);
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -415,7 +415,7 @@ export default function HomePage() {
         {/* Main Chat Area */}
         <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <header className="flex items-center justify-between px-6 py-4 border-b border-billionaire-gold-500/10 bg-billionaire-charcoal/50 backdrop-blur-xl">
+          <header className="flex items-center justify-between px-6 py-4 border-b border-billionaire-gold-500/10 bg-billionaire-charcoal/50 backdrop-blur-xl" style={{ position: 'relative', zIndex: 100 }}>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -438,19 +438,17 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={toggleWakeWord}
-                disabled={!isWakeWordSupported}
-                className={`p-2.5 rounded-full transition-all duration-300 ${
-                  isWakeWordEnabled 
-                    ? 'bg-billionaire-gold-500/20 text-billionaire-gold-400 animate-pulse' 
-                    : 'hover:bg-billionaire-gold-500/10 text-billionaire-platinum/70'
-                } ${!isWakeWordSupported ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => {
+                  console.log("Wake word button clicked!");
+                  toggleWakeWord();
+                }}
+                className="p-2.5 rounded-full transition-all duration-300"
                 title={isWakeWordEnabled ? "Disable wake word detection" : "Enable wake word detection (say 'Donut')"}
               >
                 {isWakeWordEnabled ? (
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-5 h-5 text-billionaire-gold-400" />
                 ) : (
-                  <BellOff className="w-5 h-5" />
+                  <BellOff className="w-5 h-5 text-billionaire-platinum/70" />
                 )}
               </button>
               <button

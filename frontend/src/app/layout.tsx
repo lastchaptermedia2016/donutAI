@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { GradientMeshBackground, ParticleBackground } from "@/components/ui";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -11,6 +12,16 @@ export const metadata: Metadata = {
   description:
     "A multi-modal agentic voice assistant that manages tasks, diary, calendar, and memories across business and personal contexts.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icons/icon-192x192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icons/icon-512x512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [
+      { url: '/icons/icon-180x180.png', sizes: '180x180' },
+    ],
+  },
 };
 
 export const viewport = {
@@ -35,6 +46,9 @@ export default function RootLayout({
         <div className="relative z-10">
           <Providers>{children}</Providers>
         </div>
+        
+        {/* PWA Install Prompt */}
+        <PWAInstallPrompt />
       </body>
     </html>
   );
