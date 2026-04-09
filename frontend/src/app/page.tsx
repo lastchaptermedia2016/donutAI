@@ -242,6 +242,9 @@ export default function HomePage() {
     
     try {
       // Use Groq TTS API directly (same as chatwidget for consistent quality)
+      console.log("Attempting Groq TTS with API key:", process.env.NEXT_PUBLIC_GROQ_API_KEY ? "SET" : "NOT SET");
+      console.log("API Key starts with:", process.env.NEXT_PUBLIC_GROQ_API_KEY?.substring(0, 10));
+      
       const response = await fetch("https://api.groq.com/openai/v1/audio/speech", {
         method: "POST",
         headers: {
@@ -256,8 +259,13 @@ export default function HomePage() {
         }),
       });
       
+      console.log("Groq TTS response status:", response.status);
+      console.log("Groq TTS response ok:", response.ok);
+      
       if (!response.ok) {
-        throw new Error(`Groq TTS error: ${response.status}`);
+        const errorText = await response.text();
+        console.log("Groq TTS error response:", errorText);
+        throw new Error(`Groq TTS error: ${response.status} - ${errorText}`);
       }
       
       const audioBlob = await response.blob();
