@@ -24,6 +24,11 @@ A multi-modal agentic voice assistant that acts as your Executive Function Co-Pi
 - **PWA Support**: Installable on desktop and mobile with offline capabilities
 - **Management Console**: Full dashboard for monitoring conversations, tasks, memories, AI settings, and system health
 - **Luxury UI/UX**: Premium interface with holographic effects, magnetic buttons, gradient mesh backgrounds, particle effects, deep blue accents, multi-layer glassmorphism, and shimmer loading effects
+- **File Upload/Download**: Attach documents (PDF, DOCX, images, audio, video) and export chat history (JSON/Text formats)
+- **Enhanced TTS**: Improved pronunciation for company names and CEO (Dona: "Do-nah", Omniverge: "Om-ni-verge")
+- **Concise Responses**: Optimized response length for better user experience (2-4 sentences maximum)
+- **Voice Interruption**: Microphone button works during AI speech for natural conversation flow
+- **Company Bio Integration**: AI understands Omniverge Global's mission, services, and values
 
 ## Architecture
 
@@ -362,6 +367,10 @@ Customize Donut's personality and behavior through the Console Settings:
 - **[TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md)** - Comprehensive troubleshooting guide for common issues
 - **[STABILITY_REVIEW_REPORT.md](STABILITY_REVIEW_REPORT.md)** - Code stability analysis and production readiness assessment
 - **[MOBILE_COMPATIBILITY_GUIDE.md](MOBILE_COMPATIBILITY_GUIDE.md)** - Mobile device compatibility guide and browser support matrix
+- **[FILE_UPLOAD_DOWNLOAD_FEATURE.md](FILE_UPLOAD_DOWNLOAD_FEATURE.md)** - File attachment and chat export functionality documentation
+- **[COMPANY_BIO_IMPLEMENTATION.md](COMPANY_BIO_IMPLEMENTATION.md)** - Omniverge Global company bio integration for AI understanding
+- **[CONCISE_RESPONSE_IMPROVEMENT.md](CONCISE_RESPONSE_IMPROVEMENT.md)** - Response length optimization and brevity improvements
+- **[NAME_SPELLING_IMPROVEMENTS.md](NAME_SPELLING_IMPROVEMENTS.md)** - Correct spelling and TTS pronunciation for Dona and Omniverge Global
 
 ## Troubleshooting
 
