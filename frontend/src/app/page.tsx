@@ -26,6 +26,15 @@ import {
   VolumeX,
   Bell,
   BellOff,
+  Paperclip,
+  Download,
+  FileText,
+  File,
+  Image as ImageIcon,
+  FileAudio,
+  FileVideo,
+  FileSpreadsheet,
+  FileCode,
 } from "lucide-react";
 
 interface Message {
@@ -44,8 +53,11 @@ export default function HomePage() {
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
+  const [isFileUploading, setIsFileUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const config = contextConfig[contextMode];
@@ -176,7 +188,7 @@ export default function HomePage() {
     sanitized = sanitized.replace(/#/g, ' hash ');
     
     // Phonetic pronunciation for company names and CEO name
-    sanitized = sanitized.replace(/Dona/g, 'Do-nah'); // CEO name pronunciation
+    sanitized = sanitized.replace(/Dona/g, 'Doh-nah'); // CEO name pronunciation
     sanitized = sanitized.replace(/Omniverge/g, 'Om-ni-verge'); // Company name pronunciation
     
     // Remove emojis using regex (covers most common emoji ranges)
@@ -424,6 +436,130 @@ export default function HomePage() {
     autoResizeTextarea();
   };
 
+  // Format file size for display
+  const formatFileSize = useCallback((bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }, []);
+
+  // File upload handlers
+  const handleFileUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    setIsFileUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('session_id', sessionId);
+      formData.append('context_mode', contextMode);
+
+      const response = await fetch(`${BACKEND_URL}/api/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      
+      // Add file message to chat
+      const fileMessage: Message = {
+        role: "user",
+        content: `📁 ${file.name} (${formatFileSize(file.size)})`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, fileMessage]);
+
+      // Send message to AI about the file
+      handleSend(`I've uploaded a file: ${file.name}. Please analyze it.`);
+      
+    } catch (error) {
+      console.error('File upload failed:', error);
+      // Add error message to chat
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "Sorry, I couldn't upload that file. Please try again.",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsFileUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [sessionId, contextMode, handleSend]);
+
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const files = e.dataTransfer.files;
+    handleFileUpload(files);
+  }, [handleFileUpload]);
+
+  // File input change handler
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    handleFileUpload(files);
+  }, [handleFileUpload]);
+
+  // Chat export functionality
+  const exportChat = useCallback(() => {
+    const chatData = {
+      exportDate: new Date().toISOString(),
+      session: sessionId,
+      contextMode: contextMode,
+      messages: messages.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(chatData, null, 2)], { 
+      type: 'application/json' 
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `donut-chat-${sessionId}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [messages, sessionId, contextMode]);
+
+  // Export chat as text
+  const exportChatText = useCallback(() => {
+    const textContent = messages.map(msg => 
+      `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role.toUpperCase()}: ${msg.content}`
+    ).join('\n\n');
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `donut-chat-${sessionId}-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [messages, sessionId]);
+
   // Focus textarea on mount
   useEffect(() => {
     textareaRef.current?.focus();
@@ -661,8 +797,34 @@ export default function HomePage() {
 
           {/* Input Area */}
           <div className="border-t border-billionaire-gold-500/10 p-6 space-y-4 bg-billionaire-charcoal/50 backdrop-blur-xl">
-            {/* Voice Button + Text Input */}
+            {/* File Upload + Voice Button + Text Input */}
             <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
+              {/* File Upload Button */}
+              <div className="relative">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                  id="file-upload"
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.mp3,.mp4,.wav,.xlsx,.csv,.json,.xml"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className={`p-3 rounded-full transition-all duration-300 cursor-pointer ${
+                    isFileUploading 
+                      ? 'bg-billionaire-gold-500/20 text-billionaire-gold-400 animate-pulse' 
+                      : 'hover:bg-billionaire-gold-500/10 text-billionaire-platinum/70'
+                  }`}
+                  title="Upload file"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </label>
+                {isFileUploading && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+                )}
+              </div>
+
               <button
                 onClick={isListening ? stopListening : handleStartListening}
                 disabled={!isVoiceSupported}
@@ -695,6 +857,26 @@ export default function HomePage() {
                   <Send className="w-5 h-5" />
                 </button>
               </div>
+            </div>
+
+            {/* Export Buttons */}
+            <div className="flex justify-center gap-3 max-w-4xl mx-auto">
+              <button
+                onClick={exportChat}
+                className="flex items-center gap-2 px-4 py-2 text-sm rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Export chat as JSON"
+              >
+                <FileText className="w-4 h-4" />
+                Export JSON
+              </button>
+              <button
+                onClick={exportChatText}
+                className="flex items-center gap-2 px-4 py-2 text-sm rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Export chat as text"
+              >
+                <Download className="w-4 h-4" />
+                Export Text
+              </button>
             </div>
 
             {isWakeWordStandby && !isListening && (

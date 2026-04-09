@@ -4,7 +4,7 @@ import logging
 import time
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from pathlib import Path
 
@@ -990,6 +990,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except Exception as e:
             logger.error(f"Error fetching slots: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
+
+    # --- File Upload Routes ---
+
+    # Import and include the upload router
+    from .api.upload import router as upload_router
+    app.include_router(upload_router)
 
     # --- TTS/STT Routes with Fallback ---
 
