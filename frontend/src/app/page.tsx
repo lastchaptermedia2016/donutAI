@@ -176,18 +176,20 @@ export default function HomePage() {
     sanitized = sanitized.replace(/#/g, ' hash ');
     
     // Remove emojis using regex (covers most common emoji ranges)
-    sanitized = sanitized.replace(/[\u{1F600}-\u{1F64F}]/gu, ''); // Emoticons
-    sanitized = sanitized.replace(/[\u{1F300}-\u{1F5FF}]/gu, ''); // Misc Symbols and Pictographs
-    sanitized = sanitized.replace(/[\u{1F680}-\u{1F6FF}]/gu, ''); // Transport and Map
-    sanitized = sanitized.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, ''); // Flags
-    sanitized = sanitized.replace(/[\u{2600}-\u{26FF}]/gu, ''); // Misc symbols
-    sanitized = sanitized.replace(/[\u{2700}-\u{27BF}]/gu, ''); // Dingbats
-    sanitized = sanitized.replace(/[\u{FE00}-\u{FE0F}]/gu, ''); // Variation Selectors
-    sanitized = sanitized.replace(/[\u{1F900}-\u{1F9FF}]/gu, ''); // Supplemental Symbols
-    sanitized = sanitized.replace(/[\u{1FA00}-\u{1FA6F}]/gu, ''); // Chess Symbols
-    sanitized = sanitized.replace(/[\u{1FA70}-\u{1FAFF}]/gu, ''); // Symbols Extended-A
-    sanitized = sanitized.replace(/[\u{200D}]/gu, ''); // Zero-width joiner
-    sanitized = sanitized.replace(/[\u{20E3}]/gu, ''); // Combining enclosing keycap
+    // Using simpler patterns compatible with older TypeScript targets
+    sanitized = sanitized.replace(/[\u263a-\u263b]/g, ''); // Basic smiley faces
+    sanitized = sanitized.replace(/[\u2600-\u26FF]/g, ''); // Weather and misc symbols
+    sanitized = sanitized.replace(/[\u2700-\u27BF]/g, ''); // Dingbats
+    sanitized = sanitized.replace(/[\u2B00-\u2BFF]/g, ''); // Arrows and shapes
+    sanitized = sanitized.replace(/[\u25A0-\u25FF]/g, ''); // Geometric shapes
+    sanitized = sanitized.replace(/[\u2300-\u23FF]/g, ''); // Miscellaneous technical
+    sanitized = sanitized.replace(/[\u2190-\u21FF]/g, ''); // Arrows
+    sanitized = sanitized.replace(/[\u200D]/g, ''); // Zero-width joiner
+    sanitized = sanitized.replace(/[\uFE00-\uFE0F]/g, ''); // Variation Selectors
+    sanitized = sanitized.replace(/[\u20E3]/g, ''); // Combining enclosing keycap
+    
+    // Remove common emoji characters by name patterns
+    sanitized = sanitized.replace(/:[a-zA-Z_]+:/g, ''); // :smile:, :heart:, etc.
     
     // Remove other special characters that might be read aloud
     sanitized = sanitized.replace(/[•·●○◎◇◆★☆◈◉◊]/g, ''); // Bullet points and similar
