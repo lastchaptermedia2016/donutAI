@@ -216,39 +216,76 @@ export default function HomePage() {
     return sanitized || " "; // Return at least a space if text is empty
   }, []);
 
-  // Function to speak text using browser SpeechSynthesis with optimized settings
-  const speakText = useCallback((text: string) => {
-    if (!isTTSEnabled || !synthRef.current) return;
+  // Function to speak text using Groq TTS API (same as chatwidget - Morpheus/Autumn voice)
+  const speakText = useCallback(async (text: string) => {
+    if (!isTTSEnabled) return;
     
     // Cancel any ongoing speech (allows interruption)
-    synthRef.current.cancel();
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
     
     // Sanitize text to remove emojis, symbols, and formatting
     const sanitizedText = sanitizeTextForSpeech(text);
     
-    const utterance = new SpeechSynthesisUtterance(sanitizedText);
-    
-    // Optimized for natural, conversational delivery
-    utterance.rate = 0.95;    // Slightly slower for clarity
-    utterance.pitch = 1.05;   // Slightly higher for warmth
-    utterance.volume = 0.95;  // Near max but not clipping
-    
-    // Try to use the most natural-sounding voice available
-    const voices = synthRef.current.getVoices();
-    
-    // Priority order for natural voices
-    const preferredVoice = 
-      voices.find(v => v.name.includes("Google US English")) ||    // Best quality
-      voices.find(v => v.name.includes("Samantha")) ||             // iOS natural voice
-      voices.find(v => v.name.includes("Alex")) ||                 // macOS voice
-      voices.find(v => v.name.includes("Google") && v.lang.startsWith('en')) || // Any Google English
-      voices.find(v => v.lang === "en-US") ||                      // Any US English
-      voices.find(v => v.lang.startsWith('en'));                   // Any English
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    try {
+      // Use Groq TTS API directly (same as chatwidget for consistent quality)
+      const response = await fetch("https://api.groq.com/openai/v1/audio/speech", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "canopylabs/orpheus-v1-english",
+          voice: "autumn",
+          input: sanitizedText.slice(0, 8000),
+          response_format: "wav",
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Groq TTS error: ${response.status}`);
+      }
+      
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      // Play audio with error handling
+      audio.play().catch(e => console.log("Audio play failed:", e));
+      
+      // Clean up when done
+      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      
+    } catch (error) {
+      console.log("Groq TTS failed, falling back to browser TTS:", error);
+      
+      // Fallback to browser SpeechSynthesis if Groq fails
+      if (synthRef.current) {
+        const utterance = new SpeechSynthesisUtterance(sanitizedText);
+        
+        // Optimized for natural, conversational delivery
+        utterance.rate = 0.95;    // Slightly slower for clarity
+        utterance.pitch = 1.05;   // Slightly higher for warmth
+        utterance.volume = 0.95;  // Near max but not clipping
+        
+        // Try to use the most natural-sounding voice available
+        const voices = synthRef.current.getVoices();
+        const preferredVoice = 
+          voices.find(v => v.name.includes("Google US English")) ||
+          voices.find(v => v.name.includes("Samantha")) ||
+          voices.find(v => v.name.includes("Alex")) ||
+          voices.find(v => v.name.includes("Google") && v.lang.startsWith('en')) ||
+          voices.find(v => v.lang === "en-US") ||
+          voices.find(v => v.lang.startsWith('en'));
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+        
+        synthRef.current.speak(utterance);
+      }
     }
-    
-    synthRef.current.speak(utterance);
   }, [isTTSEnabled]);
 
   // Scroll to bottom on new messages
