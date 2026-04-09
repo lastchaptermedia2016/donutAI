@@ -352,22 +352,74 @@
   background-clip: text;
 }
 
-/* Enhanced Input with Deep Blue */
-.luxury-input {
-  background: linear-gradient(135deg, rgba(10, 22, 40, 0.6) 0%, rgba(26, 26, 26, 0.4) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(201, 169, 110, 0.12);
-  transition: all 0.3s ease;
-}
+  /* Enhanced Input with Deep Blue */
+  .luxury-input {
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.6) 0%, rgba(26, 26, 26, 0.4) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(201, 169, 110, 0.12);
+    transition: all 0.3s ease;
+  }
 
-.luxury-input:focus {
-  border-color: rgba(30, 58, 95, 0.5);
-  box-shadow: 
-    0 0 0 1px rgba(30, 58, 95, 0.3),
-    0 0 20px rgba(30, 58, 95, 0.1);
-  outline: none;
-}
+  .luxury-input:focus {
+    border-color: rgba(30, 58, 95, 0.5);
+    box-shadow: 
+      0 0 0 1px rgba(30, 58, 95, 0.3),
+      0 0 20px rgba(30, 58, 95, 0.1);
+    outline: none;
+  }
+
+  /* Enhanced Textarea with Multi-line Support */
+  .glass-textarea {
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.6) 0%, rgba(26, 26, 26, 0.4) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(201, 169, 110, 0.12);
+    color: #EDEDF5;
+    border-radius: 9999px;
+    padding: 14px 16px;
+    font-size: 16px;
+    line-height: 1.4;
+    transition: all 0.3s ease;
+    resize: none;
+    min-height: 56px;
+    max-height: 120px;
+    overflow: auto;
+    outline: none;
+    width: 100%;
+  }
+
+  .glass-textarea:focus {
+    border-color: rgba(30, 58, 95, 0.5);
+    box-shadow: 
+      0 0 0 1px rgba(30, 58, 95, 0.3),
+      0 0 20px rgba(30, 58, 95, 0.1);
+  }
+
+  .glass-textarea::placeholder {
+    color: rgba(237, 237, 245, 0.4);
+    font-size: 16px;
+  }
+
+  /* Custom scrollbar for textarea */
+  .glass-textarea::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .glass-textarea::-webkit-scrollbar-track {
+    background: rgba(10, 10, 10, 0.3);
+    border-radius: 2px;
+  }
+
+  .glass-textarea::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(201, 169, 110, 0.4) 0%, rgba(30, 58, 95, 0.4) 100%);
+    border-radius: 2px;
+  }
+
+  .glass-textarea::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(201, 169, 110, 0.6) 0%, rgba(30, 58, 95, 0.6) 100%);
+  }
 
 /* Floating Animation with Depth */
 .float-depth {

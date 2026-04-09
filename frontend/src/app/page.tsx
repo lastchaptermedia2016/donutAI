@@ -45,7 +45,7 @@ export default function HomePage() {
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const config = contextConfig[contextMode];
@@ -115,6 +115,15 @@ export default function HomePage() {
     }
   }, [isWakeWordEnabled, startWakeWordDetection, stopWakeWordDetection]);
 
+  // Enhanced startListening that interrupts TTS
+  const handleStartListening = useCallback(async () => {
+    // Cancel any ongoing TTS to allow natural interruption
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
+    await startListening();
+  }, [startListening]);
+
   // Sync isSupported with state to avoid hydration mismatch
   useEffect(() => {
     setIsVoiceSupported(isSupported);
@@ -127,14 +136,79 @@ export default function HomePage() {
     }
   }, []);
 
+  // Sanitize text for speech synthesis - removes emojis, symbols, and formatting
+  const sanitizeTextForSpeech = useCallback((text: string): string => {
+    if (!text) return "";
+    
+    let sanitized = text;
+    
+    // Remove markdown formatting
+    sanitized = sanitized.replace(/\*\*(.*?)\*\*/g, '$1'); // **bold**
+    sanitized = sanitized.replace(/\*(.*?)\*/g, '$1'); // *italic*
+    sanitized = sanitized.replace(/__(.*?)__/g, '$1'); // __underline__
+    sanitized = sanitized.replace(/_(.*?)_/g, '$1'); // _italic_
+    sanitized = sanitized.replace(/~~(.*?)~~/g, '$1'); // ~~strikethrough~~
+    sanitized = sanitized.replace(/`{1,3}(.*?)`{1,3}/g, '$1'); // `code`
+    
+    // Remove markdown links but keep text
+    sanitized = sanitized.replace(/\[(.*?)\]\(.*?\)/g, '$1');
+    
+    // Remove markdown headers
+    sanitized = sanitized.replace(/^#{1,6}\s+/gm, '');
+    
+    // Remove markdown lists
+    sanitized = sanitized.replace(/^[\s]*[-*+]\s+/gm, '');
+    sanitized = sanitized.replace(/^[\s]*\d+\.\s+/gm, '');
+    
+    // Remove markdown blockquotes
+    sanitized = sanitized.replace(/^>\s+/gm, '');
+    
+    // Remove standalone asterisks and common formatting symbols
+    sanitized = sanitized.replace(/\*/g, '');
+    sanitized = sanitized.replace(/_/g, '');
+    sanitized = sanitized.replace(/~/g, '');
+    sanitized = sanitized.replace(/\|/g, '');
+    sanitized = sanitized.replace(/`/g, '');
+    
+    // Replace common symbols with words
+    sanitized = sanitized.replace(/&/g, ' and ');
+    sanitized = sanitized.replace(/@/g, ' at ');
+    sanitized = sanitized.replace(/#/g, ' hash ');
+    
+    // Remove emojis using regex (covers most common emoji ranges)
+    sanitized = sanitized.replace(/[\u{1F600}-\u{1F64F}]/gu, ''); // Emoticons
+    sanitized = sanitized.replace(/[\u{1F300}-\u{1F5FF}]/gu, ''); // Misc Symbols and Pictographs
+    sanitized = sanitized.replace(/[\u{1F680}-\u{1F6FF}]/gu, ''); // Transport and Map
+    sanitized = sanitized.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, ''); // Flags
+    sanitized = sanitized.replace(/[\u{2600}-\u{26FF}]/gu, ''); // Misc symbols
+    sanitized = sanitized.replace(/[\u{2700}-\u{27BF}]/gu, ''); // Dingbats
+    sanitized = sanitized.replace(/[\u{FE00}-\u{FE0F}]/gu, ''); // Variation Selectors
+    sanitized = sanitized.replace(/[\u{1F900}-\u{1F9FF}]/gu, ''); // Supplemental Symbols
+    sanitized = sanitized.replace(/[\u{1FA00}-\u{1FA6F}]/gu, ''); // Chess Symbols
+    sanitized = sanitized.replace(/[\u{1FA70}-\u{1FAFF}]/gu, ''); // Symbols Extended-A
+    sanitized = sanitized.replace(/[\u{200D}]/gu, ''); // Zero-width joiner
+    sanitized = sanitized.replace(/[\u{20E3}]/gu, ''); // Combining enclosing keycap
+    
+    // Remove other special characters that might be read aloud
+    sanitized = sanitized.replace(/[•·●○◎◇◆★☆◈◉◊]/g, ''); // Bullet points and similar
+    
+    // Clean up extra whitespace
+    sanitized = sanitized.replace(/\s+/g, ' ').trim();
+    
+    return sanitized || " "; // Return at least a space if text is empty
+  }, []);
+
   // Function to speak text using browser SpeechSynthesis with optimized settings
   const speakText = useCallback((text: string) => {
     if (!isTTSEnabled || !synthRef.current) return;
     
-    // Cancel any ongoing speech
+    // Cancel any ongoing speech (allows interruption)
     synthRef.current.cancel();
     
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Sanitize text to remove emojis, symbols, and formatting
+    const sanitizedText = sanitizeTextForSpeech(text);
+    
+    const utterance = new SpeechSynthesisUtterance(sanitizedText);
     
     // Optimized for natural, conversational delivery
     utterance.rate = 0.95;    // Slightly slower for clarity
@@ -315,12 +389,44 @@ export default function HomePage() {
     [inputText, isLoading, ws, contextMode, sessionId]
   );
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
+
+  // Auto-resize textarea based on content
+  const autoResizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = "auto";
+    
+    // Calculate new height
+    const newHeight = Math.min(textarea.scrollHeight, 120); // Max 120px
+    textarea.style.height = `${newHeight}px`;
+    
+    // Toggle overflow based on whether we hit the max
+    textarea.style.overflow = textarea.scrollHeight > 120 ? "auto" : "hidden";
+  }, []);
+
+  // Handle input change with auto-resize
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    autoResizeTextarea();
+  };
+
+  // Focus textarea on mount
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
+  // Resize textarea when input text changes (e.g., from voice input)
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [inputText, autoResizeTextarea]);
 
   return (
     <div className="min-h-screen billionaire-interface-gradient transition-all duration-700">
@@ -552,33 +658,33 @@ export default function HomePage() {
             {/* Voice Button + Text Input */}
             <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
               <button
-                onClick={isListening ? stopListening : startListening}
+                onClick={isListening ? stopListening : handleStartListening}
                 disabled={!isVoiceSupported}
                 className={`
                   ${isListening ? 'voice-button-listening' : 'voice-button-idle'}
                   ${!isVoiceSupported ? "opacity-50 cursor-not-allowed" : ""}
                 `}
-                title={isListening ? "Tap to stop" : "Tap to speak"}
+                title={isListening ? "Tap to stop" : "Tap to speak (interrupts AI)"}
               >
                 {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
               </button>
 
-              <div className="flex-1 flex gap-3">
-                <input
-                  ref={inputRef}
-                  type="text"
+              <div className="flex-1 flex gap-3 items-end">
+                <textarea
+                  ref={textareaRef}
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Type a message..."
-                  className="glass-input flex-1"
+                  placeholder="Type a message... (Shift+Enter for new line)"
+                  className="glass-textarea flex-1"
+                  rows={1}
                   autoFocus={true}
                   autoComplete="off"
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={!inputText.trim() || isLoading}
-                  className="gold-button w-14 h-14 p-0 flex items-center justify-center disabled:opacity-50"
+                  className="gold-button w-14 h-14 p-0 flex items-center justify-center disabled:opacity-50 flex-shrink-0"
                 >
                   <Send className="w-5 h-5" />
                 </button>

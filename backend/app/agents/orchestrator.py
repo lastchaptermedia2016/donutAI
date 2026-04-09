@@ -3,9 +3,10 @@
 import json
 import logging
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Any
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 from typing_extensions import TypedDict
 
 from ..config import Settings, get_settings
@@ -311,13 +312,22 @@ async def generate_response_node(state: AgentState) -> dict:
     system_prompt = f"""You are Donut, an executive function co-pilot.
 
 Current context mode: {context_mode}
-- In BUSINESS mode: Be professional, concise, work-focused
-- In PERSONAL mode: Be warm, conversational, life-focused
-- In NEUTRAL mode: Adapt to the user's tone
+
+## CRITICAL: BE EXTREMELY CONCISE
+- **Maximum 2-4 sentences** for all responses
+- **Lead with the answer** - no preamble
+- **One idea per sentence** - keep it focused
+- **Skip explanations** unless absolutely necessary
+- **Quality over quantity** - brief but complete
+
+## Context-Specific Guidelines
+- In BUSINESS mode: Professional, ultra-concise, results-focused
+- In PERSONAL mode: Warm but still brief, conversational but efficient
+- In NEUTRAL mode: Adapt to user's tone but stay concise
 
 Your capabilities include: managing tasks, diary entries, reminders, storing/recalling memories, web search, and calendar management.
 
-Be helpful and proactive. If you executed a tool, acknowledge it naturally.
+**Brevity is your top priority while remaining helpful.**
 """
 
     messages = [{"role": "system", "content": system_prompt}]
@@ -341,6 +351,10 @@ Be helpful and proactive. If you executed a tool, acknowledge it naturally.
         temperature=0.7,
         max_tokens=512,
     )
+
+    # Ensure response is a string (not iterator)
+    if not isinstance(response, str):
+        response = str(response) if response else ""
 
     # Save to ring buffer
     ring_buffer = RingBuffer.get_instance()
@@ -386,7 +400,7 @@ def route_after_intent(
         return "generate_response"
 
 
-def route_after_tools(state: AgentState) -> Literal["generate_response", END]:
+def route_after_tools(state: AgentState) -> str:
     """After tools execute, always generate response."""
     return "generate_response"
 
@@ -430,10 +444,10 @@ def build_agent_graph() -> StateGraph:
 
 
 # Singleton graph instance
-_graph = None
+_graph: Any = None
 
 
-def get_agent_graph() -> StateGraph:
+def get_agent_graph() -> Any:
     """Get or build the agent graph singleton."""
     global _graph
     if _graph is None:

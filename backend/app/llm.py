@@ -23,7 +23,7 @@ class GroqClient:
         messages: list[dict[str, str]],
         model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 1024,
+        max_tokens: int | None = None,
         stream: bool = False,
     ) -> str | AsyncIterator[str]:
         """Get chat completion from Groq.
@@ -32,13 +32,18 @@ class GroqClient:
             messages: List of message dicts with 'role' and 'content'
             model: Model to use (defaults to configured llm_model)
             temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
+            max_tokens: Maximum tokens to generate (defaults to 400 for concise responses)
             stream: Whether to stream the response
 
         Returns:
             Full response string or async iterator of chunks if streaming
         """
         model = model or self._settings.llm_model
+        
+        # Default to 400 tokens for concise responses (2-4 sentences)
+        # This can be overridden by passing a specific max_tokens value
+        if max_tokens is None:
+            max_tokens = 400
 
         try:
             response = await self._client.chat.completions.create(
