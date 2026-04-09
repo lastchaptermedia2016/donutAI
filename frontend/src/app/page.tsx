@@ -5,6 +5,7 @@ import { useAppState } from "@/components/providers";
 import { ContextMode, contextConfig, BACKEND_URL } from "@/lib/utils";
 import { useVoice } from "@/hooks/useVoice";
 import { useWakeWordDetection } from "@/hooks/useWakeWordDetection";
+import { useWakeLock } from "@/hooks/useWakeLock";
 import { DonutLogo } from "@/components/DonutLogo";
 import {
   Mic,
@@ -87,6 +88,17 @@ export default function HomePage() {
   // Store stopWakeWordDetection in a ref to access it in callbacks
   const stopWakeWordDetectionRef = useRef<(() => void) | null>(null);
   stopWakeWordDetectionRef.current = stopWakeWordDetection;
+
+  // Wake Lock - prevents device from sleeping when app is active
+  const { 
+    isActive: isWakeLockActive, 
+    isSupported: isWakeLockSupported 
+  } = useWakeLock({
+    enabled: true,
+    onAcquire: () => console.log('Wake Lock active - device will not sleep'),
+    onRelease: () => console.log('Wake Lock released'),
+    onError: (error) => console.log('Wake Lock error:', error.message),
+  });
 
   // Wake word detection - when "Donut" is detected, auto-activate voice
   const handleWakeWordDetected = useCallback(() => {

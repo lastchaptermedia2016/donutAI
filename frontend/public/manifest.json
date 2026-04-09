@@ -70,6 +70,10 @@
     }
   ],
   "categories": ["productivity", "utilities"],
+  "background_color": "#FFF8DC",
+  "theme_color": "#FFBF00",
+  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay"],
   "shortcuts": [
     {
       "name": "Voice Command",
