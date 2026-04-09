@@ -175,6 +175,10 @@ export default function HomePage() {
     sanitized = sanitized.replace(/@/g, ' at ');
     sanitized = sanitized.replace(/#/g, ' hash ');
     
+    // Phonetic pronunciation for company names and CEO name
+    sanitized = sanitized.replace(/Dona/g, 'Do-nah'); // CEO name pronunciation
+    sanitized = sanitized.replace(/Omniverge/g, 'Om-ni-verge'); // Company name pronunciation
+    
     // Remove emojis using regex (covers most common emoji ranges)
     // Using simpler patterns compatible with older TypeScript targets
     sanitized = sanitized.replace(/[\u263a-\u263b]/g, ''); // Basic smiley faces

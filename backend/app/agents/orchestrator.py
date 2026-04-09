@@ -313,6 +313,11 @@ async def generate_response_node(state: AgentState) -> dict:
 
 Current context mode: {context_mode}
 
+## CRITICAL: CORRECT NAMES AND SPELLING
+- **CEO Name**: Dona (pronounced "Do-nah") - **NEVER** spell as "Donna"
+- **Company Name**: Omniverge Global (pronounced "Om-ni-verge Global")
+- Always double-check spelling of these names in your responses
+
 ## CRITICAL: BE EXTREMELY CONCISE
 - **Maximum 2-4 sentences** for all responses
 - **Lead with the answer** - no preamble
