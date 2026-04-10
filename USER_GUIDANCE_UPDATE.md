@@ -1,11 +1,108 @@
-# User Guidance Update - Recent Improvements
+# User Guidance Update - Complete Feature Guide
 
 ## Overview
-This document provides updated user guidance for all the recent improvements made to Donut AI, including file upload/download functionality, enhanced TTS, concise responses, and company bio integration.
+This document provides comprehensive user guidance for all improvements made to Donut AI, including the complete suite of user experience enhancements, settings management, and intelligent features.
 
 ## Recent Improvements Summary
 
-### 📁 File Upload/Download Feature (Latest)
+### 🎛️ Settings Modal (Phase 1)
+**Added:** Comprehensive control panel for all Donut settings
+
+#### **For Users:**
+- **Access Settings**: Click the gear icon in the top-right header
+- **Voice & Audio Controls**:
+  - Toggle Text-to-Speech on/off
+  - Select voice: Autumn (Female, Warm) or Morpheus (Male, Deep)
+  - Adjust speech speed (0.5x - 2.0x)
+  - Adjust volume (0% - 100%)
+  - Toggle background music
+- **Wake Word Settings**:
+  - Enable/disable wake word detection
+  - Set custom wake word (default: "donut")
+- **Appearance**:
+  - Toggle dark mode on/off
+- **All settings are automatically saved** and restored on your next visit
+
+### 💾 Persistent Settings & Chat History (Phase 2)
+**Added:** Automatic save/load of all user preferences and conversations
+
+#### **For Users:**
+- **Settings Persistence**: All your preferences are saved to localStorage
+- **Chat History**: Conversations are automatically saved between sessions
+- **No Configuration Needed**: Everything works automatically
+- **Privacy**: All data is stored locally in your browser
+
+### ⌨️ Keyboard Shortcuts (Phase 2)
+**Added:** Power user keyboard shortcuts for faster workflow
+
+#### **Available Shortcuts:**
+- **`Ctrl+M`** - Toggle microphone on/off
+- **`Ctrl+K`** - Open Settings modal
+- **`Ctrl+Shift+E`** - Export chat as JSON
+- **`Shift+Enter`** - New line in text input (Enter sends message)
+
+#### **For Users:**
+- Use shortcuts for faster, more efficient interactions
+- Especially useful for frequent voice users
+- Works in all modern browsers
+
+### ⚡ Quick Actions (Phase 2)
+**Added:** One-click buttons for common tasks
+
+#### **Available Quick Actions:**
+- **Add Task** - Quickly create a new task
+- **Write Diary** - Start a diary entry
+- **Search Web** - Perform a web search
+- **Remember** - Store important information
+- **Find Music** - Search for and play songs
+
+#### **For Users:**
+- Located below the input area
+- One click to execute common commands
+- Saves time and reduces typing
+- Perfect for frequent operations
+
+### 🧠 Context Memory (Phase 3)
+**Added:** Intelligent extraction and storage of user preferences
+
+#### **How It Works:**
+- AI automatically detects when you share preferences
+- Extracts and stores information like "my boss prefers emails"
+- Remembers your preferences for future conversations
+- No manual configuration needed
+
+#### **Example Usage:**
+```
+User: "Remember that my boss prefers emails over phone calls"
+AI: "I'll remember that your boss prefers emails."
+[Later conversation]
+AI: "Based on your preference, I'll send an email instead of calling."
+```
+
+### 🗣️ Customizable Wake Word (Phase 3)
+**Added:** Set any word to activate Donut
+
+#### **For Users:**
+- Default wake word: "donut"
+- Change to any word you prefer in Settings
+- Wake word detection works in background
+- Say your custom word to activate voice input
+
+### 🎨 AI Status Indicators (Phase 4)
+**Added:** Visual feedback for AI states
+
+#### **Status States:**
+- **Idle** - AI is ready and waiting
+- **Thinking** - AI is processing your message
+- **Speaking** - AI is speaking (TTS active)
+- **Listening** - AI is listening to your voice
+
+#### **For Users:**
+- Clear visual indicators of AI state
+- Better understanding of conversation flow
+- Enhanced user experience with real-time feedback
+
+### 📁 File Upload/Download Feature
 **Added:** Complete file attachment and chat export functionality
 
 #### **For Users:**
@@ -78,6 +175,43 @@ This document provides updated user guidance for all the recent improvements mad
 - Accurate knowledge of all company services
 - Professional brand representation in all interactions
 - Correct spelling and pronunciation of company names
+
+### 🎵 Music Search & Playback Feature
+**Added:** Voice-activated music search and playback functionality
+
+#### **How to Use:**
+- **Voice Command**: Say "Find me this song" or "Play [song name] by [artist]"
+- **Quick Action**: Click the "Find Music" button below the input area
+- **Text Input**: Type "Find me this song" or "Play [song name]"
+
+#### **Music Player Controls:**
+- **Play/Pause**: Large gold button in the center
+- **Seek**: Drag the progress bar to skip through the song
+- **Volume**: Slider on the left side
+- **Mute**: Click the speaker icon
+- **Close**: Click the X in the top-right corner
+
+#### **Features:**
+- Searches YouTube and returns playable results
+- Shows track title, artist, and duration
+- Integrated with Donut's luxury UI design
+- Auto-plays when a song is found
+- Responsive controls with real-time feedback
+
+#### **Example Usage:**
+```
+User: "Find me this song"
+AI: "Sure, what song would you like me to find?"
+User: "Play Bohemian Rhapsody by Queen"
+AI: "Searching for Queen - Bohemian Rhapsody..."
+[Music player appears and starts playing]
+```
+
+#### **For Users:**
+- Natural, conversational music discovery
+- No need to leave the chat interface
+- Beautiful, integrated music player
+- Works with voice or text commands
 
 ## Updated User Interface Features
 

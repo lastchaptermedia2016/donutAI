@@ -28,6 +28,7 @@ class IntentType(str, Enum):
     REMINDER_CREATE = "reminder_create"
     REMINDER_LIST = "reminder_list"
     WEB_SEARCH = "web_search"
+    MUSIC_SEARCH = "music_search"  # "Find me this song" / "Play music"
     MEMORY_STORE = "memory_store"  # "Remember that..."
     MEMORY_RECALL = "memory_recall"  # "What did I say about..."
     CONTEXT_SWITCH = "context_switch"

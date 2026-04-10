@@ -7,6 +7,7 @@ import { useVoice } from "@/hooks/useVoice";
 import { useWakeWordDetection } from "@/hooks/useWakeWordDetection";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { DonutLogo } from "@/components/DonutLogo";
+import { MusicPlayer } from "@/components/MusicPlayer";
 import {
   Mic,
   MicOff,
@@ -36,6 +37,12 @@ import {
   FileVideo,
   FileSpreadsheet,
   FileCode,
+  Settings,
+  Music,
+  Music2,
+  Speaker,
+  User,
+  Headphones,
 } from "lucide-react";
 
 interface Message {
@@ -56,6 +63,23 @@ export default function HomePage() {
   const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
   const [isFileUploading, setIsFileUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [ttsVoice, setTtsVoice] = useState("autumn");
+  const [ttsSpeed, setTtsSpeed] = useState(1);
+  const [ttsVolume, setTtsVolume] = useState(1);
+  const [customWakeWord, setCustomWakeWord] = useState("donut");
+  const [backgroundMusicEnabled, setBackgroundMusicEnabled] = useState(false);
+  const [userPreferences, setUserPreferences] = useState<Record<string, any>>({});
+  const [language, setLanguage] = useState("en");
+  const [aiStatus, setAiStatus] = useState<'idle' | 'thinking' | 'speaking' | 'listening'>('idle');
+  const [currentTrack, setCurrentTrack] = useState<{
+    id: string;
+    title: string;
+    artist: string;
+    duration: string;
+    audioUrl: string;
+    watchUrl: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -160,6 +184,102 @@ export default function HomePage() {
     }
   }, []);
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Load theme preference
+      const savedTheme = localStorage.getItem('donut-theme');
+      if (savedTheme === 'dark') {
+        // Already handled by useAppState, but we can sync if needed
+      }
+      
+      // Load TTS settings
+      const savedTtsVoice = localStorage.getItem('donut-tts-voice');
+      if (savedTtsVoice) setTtsVoice(savedTtsVoice);
+      
+      const savedTtsSpeed = localStorage.getItem('donut-tts-speed');
+      if (savedTtsSpeed) setTtsSpeed(parseFloat(savedTtsSpeed));
+      
+      const savedTtsVolume = localStorage.getItem('donut-tts-volume');
+      if (savedTtsVolume) setTtsVolume(parseFloat(savedTtsVolume));
+      
+      // Load wake word settings
+      const savedWakeWord = localStorage.getItem('donut-wake-word');
+      if (savedWakeWord) setCustomWakeWord(savedWakeWord);
+      
+      // Load user preferences (context memory)
+      const savedPreferences = localStorage.getItem('donut-user-preferences');
+      if (savedPreferences) {
+        try {
+          setUserPreferences(JSON.parse(savedPreferences));
+        } catch (e) {
+          console.log('Failed to load user preferences:', e);
+        }
+      }
+      
+      // Load language preference
+      const savedLanguage = localStorage.getItem('donut-language');
+      if (savedLanguage) setLanguage(savedLanguage);
+      
+      // Load chat history
+      const savedChat = localStorage.getItem('donut-chat-history');
+      if (savedChat) {
+        try {
+          const chatMessages = JSON.parse(savedChat);
+          setMessages(chatMessages);
+        } catch (e) {
+          console.log('Failed to load chat history:', e);
+        }
+      }
+    }
+  }, []);
+
+  // Save settings to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem('donut-tts-voice', ttsVoice);
+      localStorage.setItem('donut-tts-speed', ttsSpeed.toString());
+      localStorage.setItem('donut-tts-volume', ttsVolume.toString());
+      localStorage.setItem('donut-wake-word', customWakeWord);
+      localStorage.setItem('donut-user-preferences', JSON.stringify(userPreferences));
+      localStorage.setItem('donut-language', language);
+    }
+  }, [ttsVoice, ttsSpeed, ttsVolume, customWakeWord, userPreferences, language]);
+
+  // Save chat history when messages change
+  useEffect(() => {
+    if (typeof window !== "undefined" && messages.length > 0) {
+      localStorage.setItem('donut-chat-history', JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  // Extract and remember user preferences from conversation
+  const extractAndRememberPreferences = useCallback((userMessage: string, assistantResponse: string) => {
+    const newPreferences = { ...userPreferences };
+    
+    // Simple pattern matching for common preferences
+    const patterns = [
+      /remember (?:that )?my (.+?)(?: is | prefers? | likes? | wants? | needs? )(.+?)(?:\.|$)/i,
+      /(?:my|I) (.+?)(?: is | prefers? | likes? | wants? | needs? )(.+?)(?:\.|$)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = userMessage.match(pattern);
+      if (match) {
+        const key = match[1].toLowerCase().trim();
+        const value = match[2].toLowerCase().trim();
+        newPreferences[key] = value;
+      }
+    }
+    
+    // Save if we found new preferences
+    if (Object.keys(newPreferences).length > Object.keys(userPreferences).length) {
+      setUserPreferences(newPreferences);
+      return true;
+    }
+    return false;
+  }, [userPreferences]);
+
   // Sanitize text for speech synthesis - removes emojis, symbols, and formatting
   const sanitizeTextForSpeech = useCallback((text: string): string => {
     if (!text) return "";
@@ -231,6 +351,9 @@ export default function HomePage() {
   // Function to speak text using Groq TTS API (same as chatwidget - Morpheus/Autumn voice)
   const speakText = useCallback(async (text: string) => {
     if (!isTTSEnabled) return;
+    
+    // Set speaking status
+    setAiStatus('speaking');
     
     // Cancel any ongoing speech (allows interruption)
     if (synthRef.current) {
@@ -627,6 +750,36 @@ export default function HomePage() {
     autoResizeTextarea();
   }, [inputText, autoResizeTextarea]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+M - Toggle microphone
+      if (e.ctrlKey && e.key === 'm') {
+        e.preventDefault();
+        if (isListening) {
+          stopListening();
+        } else {
+          handleStartListening();
+        }
+      }
+      
+      // Ctrl+K - Open settings
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        setShowSettings(true);
+      }
+      
+      // Ctrl+Shift+E - Export chat
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+        e.preventDefault();
+        exportChat();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isListening, stopListening, handleStartListening, exportChat]);
+
   return (
     <div className="min-h-screen billionaire-interface-gradient transition-all duration-700">
       <div className="flex h-screen">
@@ -766,6 +919,13 @@ export default function HomePage() {
                 ) : (
                   <VolumeX className="w-5 h-5 text-billionaire-platinum/70" />
                 )}
+              </button>
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2.5 rounded-full hover:bg-billionaire-gold-500/10 transition-all duration-300"
+                title="Settings"
+              >
+                <Settings className="w-5 h-5 text-billionaire-platinum/70" />
               </button>
               <button
                 onClick={toggleDarkMode}
@@ -959,9 +1119,241 @@ export default function HomePage() {
                 ℹ️ Microphone permission needed. Click the mic button and allow access when prompted.
               </p>
             )}
+
+            {/* Quick Actions */}
+            <div className="flex justify-center gap-2 max-w-4xl mx-auto">
+              <button
+                onClick={() => handleSend("Add a task to review Q3 report")}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Add task"
+              >
+                <CheckSquare className="w-3 h-3" />
+                Add Task
+              </button>
+              <button
+                onClick={() => handleSend("Write in my diary about today")}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Write diary"
+              >
+                <BookOpen className="w-3 h-3" />
+                Write Diary
+              </button>
+              <button
+                onClick={() => handleSend("Search for AI news today")}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Search web"
+              >
+                <Brain className="w-3 h-3" />
+                Search Web
+              </button>
+              <button
+                onClick={() => handleSend("Remember my boss prefers emails")}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Remember info"
+              >
+                <CircleDot className="w-3 h-3" />
+                Remember
+              </button>
+              <button
+                onClick={() => handleSend("Find me this song")}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-full glass-card-hover text-billionaire-platinum/80 hover:text-billionaire-gold-400 transition-all duration-300"
+                title="Find music"
+              >
+                <Music className="w-3 h-3" />
+                Find Music
+              </button>
+            </div>
           </div>
         </main>
       </div>
+
+      {/* Music Player */}
+      {currentTrack && (
+        <MusicPlayer 
+          track={currentTrack} 
+          onClose={() => setCurrentTrack(null)} 
+        />
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-billionaire-charcoal/95 border border-billionaire-gold-500/20 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="p-6 border-b border-billionaire-gold-500/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-6 h-6 text-billionaire-gold-400" />
+                  <h2 className="text-xl font-bold text-billionaire-gold-400">Settings</h2>
+                </div>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-2 rounded-full hover:bg-billionaire-gold-500/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-billionaire-platinum/70" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Voice & Audio Section */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-billionaire-platinum/80 uppercase tracking-wider">Voice & Audio</h3>
+                
+                {/* TTS Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Text-to-Speech</label>
+                    <p className="text-xs text-billionaire-platinum/50">Enable AI voice responses</p>
+                  </div>
+                  <button
+                    onClick={() => setIsTTSEnabled(!isTTSEnabled)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      isTTSEnabled ? 'bg-billionaire-gold-500' : 'bg-billionaire-platinum/30'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      isTTSEnabled ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* TTS Voice Selection */}
+                {isTTSEnabled && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Voice</label>
+                    <select
+                      value={ttsVoice}
+                      onChange={(e) => setTtsVoice(e.target.value)}
+                      className="w-full glass-card rounded-lg px-3 py-2 text-billionaire-platinum/80"
+                    >
+                      <option value="autumn">Autumn (Female, Warm)</option>
+                      <option value="morpheus">Morpheus (Male, Deep)</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* TTS Speed */}
+                {isTTSEnabled && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Speech Speed</label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={ttsSpeed}
+                      onChange={(e) => setTtsSpeed(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-billionaire-platinum/50 text-right">{ttsSpeed}x</p>
+                  </div>
+                )}
+
+                {/* TTS Volume */}
+                {isTTSEnabled && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Volume</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={ttsVolume}
+                      onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-billionaire-platinum/50 text-right">{Math.round(ttsVolume * 100)}%</p>
+                  </div>
+                )}
+
+                {/* Background Music */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Background Music</label>
+                    <p className="text-xs text-billionaire-platinum/50">Ambient background music</p>
+                  </div>
+                  <button
+                    onClick={() => setBackgroundMusicEnabled(!backgroundMusicEnabled)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      backgroundMusicEnabled ? 'bg-billionaire-emerald' : 'bg-billionaire-platinum/30'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      backgroundMusicEnabled ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Wake Word Section */}
+              <div className="space-y-4 border-t border-billionaire-gold-500/10 pt-4">
+                <h3 className="text-sm font-semibold text-billionaire-platinum/80 uppercase tracking-wider">Wake Word</h3>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Wake Word Detection</label>
+                    <p className="text-xs text-billionaire-platinum/50">Say "Donut" to activate</p>
+                  </div>
+                  <button
+                    onClick={toggleWakeWord}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      isWakeWordEnabled ? 'bg-billionaire-gold-500' : 'bg-billionaire-platinum/30'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      isWakeWordEnabled ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-billionaire-platinum/80">Custom Wake Word</label>
+                  <input
+                    type="text"
+                    value={customWakeWord}
+                    onChange={(e) => setCustomWakeWord(e.target.value.toLowerCase())}
+                    className="w-full glass-card rounded-lg px-3 py-2 text-billionaire-platinum/80"
+                    placeholder="donut"
+                  />
+                  <p className="text-xs text-billionaire-platinum/50">Currently: "{customWakeWord}"</p>
+                </div>
+              </div>
+
+              {/* Theme Section */}
+              <div className="space-y-4 border-t border-billionaire-gold-500/10 pt-4">
+                <h3 className="text-sm font-semibold text-billionaire-platinum/80 uppercase tracking-wider">Appearance</h3>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-billionaire-platinum/80">Dark Mode</label>
+                    <p className="text-xs text-billionaire-platinum/50">Toggle theme</p>
+                  </div>
+                  <button
+                    onClick={toggleDarkMode}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      isDarkMode ? 'bg-billionaire-gold-500' : 'bg-billionaire-platinum/30'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      isDarkMode ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="flex-1 gold-button py-2 text-sm"
+                >
+                  Save & Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

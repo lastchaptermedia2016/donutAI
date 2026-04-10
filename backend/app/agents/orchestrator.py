@@ -287,6 +287,13 @@ async def route_to_tools_node(state: AgentState) -> dict:
             tool_result = "No active reminders."
             response_note = "You have no pending reminders."
 
+    elif intent == IntentType.MUSIC_SEARCH:
+        from ..tools.music_tool import music_search_tool
+        result = music_search_tool.run(msg)
+        tool_result = result
+        action_taken = "music_search"
+        response_note = "🎵 Here's what I found:"
+
     else:
         # No tool needed - general question or chit-chat
         tool_result = None
@@ -411,6 +418,7 @@ def route_after_intent(
         IntentType.DIARY_ENTRY,
         IntentType.DIARY_READ,
         IntentType.WEB_SEARCH,
+        IntentType.MUSIC_SEARCH,
     }
 
     if intent in tool_intents:

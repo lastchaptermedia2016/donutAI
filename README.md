@@ -29,6 +29,17 @@ A multi-modal agentic voice assistant that acts as your Executive Function Co-Pi
 - **Concise Responses**: Optimized response length for better user experience (2-4 sentences maximum)
 - **Voice Interruption**: Microphone button works during AI speech for natural conversation flow
 - **Company Bio Integration**: AI understands Omniverge Global's mission, services, and values
+- **Settings Modal**: Comprehensive control panel for TTS, wake word, theme, and audio settings
+- **Persistent Settings**: All user preferences saved to localStorage and restored on next visit
+- **Persistent Chat History**: Automatic save/load of conversations between sessions
+- **Keyboard Shortcuts**: `Ctrl+M` (toggle mic), `Ctrl+K` (open settings), `Ctrl+Shift+E` (export chat)
+- **Quick Actions**: One-click buttons for common tasks (Add Task, Write Diary, Search Web, Remember, Find Music)
+- **Context Memory**: Automatic extraction and storage of user preferences from conversations
+- **Customizable Wake Word**: Set any word to activate Donut instead of the default "Donut"
+- **AI Status Indicators**: Visual feedback for AI states (idle, thinking, speaking, listening)
+- **Auto-resize Textarea**: Input field expands automatically as you type
+- **Wake Lock API**: Prevents device from sleeping during active use
+- **Music Search & Playback**: Find and play songs with "Find me this song" voice command or quick action button
 
 ## Architecture
 
