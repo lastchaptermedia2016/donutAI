@@ -6,7 +6,7 @@
 Decide on client's branding:
 - App Name (e.g., "Acme Assistant")
 - Tagline (e.g., "Your AI Business Partner")
-- Logo Emoji (e.g., "🏢")
+- Logo Emoji (e.g., "🏢")5
 - Primary Color (e.g., "#1E40AF")
 - Secondary Color (e.g., "#EFF6FF")
 - Business Name (e.g., "Acme Corp Reception")

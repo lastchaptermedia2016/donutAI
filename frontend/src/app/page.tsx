@@ -118,7 +118,7 @@ export default function HomePage() {
     isActive: isWakeLockActive, 
     isSupported: isWakeLockSupported 
   } = useWakeLock({
-    enabled: true,
+    enabled: false,  // Temporarily disabled to fix infinite loop
     onAcquire: () => console.log('Wake Lock active - device will not sleep'),
     onRelease: () => console.log('Wake Lock released'),
     onError: (error) => console.log('Wake Lock error:', error.message),
